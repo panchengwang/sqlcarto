@@ -28,9 +28,9 @@ fi
 OS=`uname`
 
 echo "==  安装依赖 ........ "
-if test ${OS} = 'Darwin' ; then 
-  brew install axel wget cmake cgal gettext boost readline protobuf-c
-fi
+# if test ${OS} = 'Darwin' ; then 
+#   brew install axel wget cmake cgal gettext boost readline protobuf-c
+# fi
 
 if test ${OS} = 'Linux' ; then 
   source /etc/os-release
@@ -84,9 +84,10 @@ fi
 
 # download postgresql
 PG_FILE=${SOURCE_PATH}/postgresql-${PG_VERSION}.tar.gz
-if [ ! -f ${PG_FILE} ] || [ -f ${PG_FILE}.st ] ; then
-  axel ${DOWNLOAD_SPEED} -o ${PG_FILE} ${PG_URL}
-fi
+# if [ ! -f ${PG_FILE} ] || [ -f ${PG_FILE}.st ] ; then
+#   axel ${DOWNLOAD_SPEED} -o ${PG_FILE} ${PG_URL}
+# fi
+wget -c -O ${PG_FILE} ${PG_URL}
 # download proj4
 PROJ_FILE=${SOURCE_PATH}/proj-${PROJ_VERSION}.tar.gz
 if [ ! -f ${PROJ_FILE} ] || [ -f ${PROJ_FILE}.st ] ; then
@@ -124,18 +125,26 @@ fi
 
 
 echo "==      finish donload sources , unzip .....    "
-tar -zvxf ${PG_FILE} -C ${SOURCE_PATH}
+tar -zvxf ${PG_FILE} -C ${SOURCE_PATH} 
 mv ${SOURCE_PATH}/postgresql-${PG_VERSION} ${SOURCE_PATH}/postgresql
+
 tar -zvxf ${PROJ_FILE} -C ${SOURCE_PATH}
 mv ${SOURCE_PATH}/proj-${PROJ_VERSION} ${SOURCE_PATH}/proj
+
 tar -zvxf ${POSTGIS_FILE} -C ${SOURCE_PATH}
 mv ${SOURCE_PATH}/postgis-${POSTGIS_VERSION} ${SOURCE_PATH}/postgis
-tar -jvxf ${GEOS_FILE} -C ${SOURCE_PATH }
+
+tar -jvxf ${GEOS_FILE} -C ${SOURCE_PATH}
 mv ${SOURCE_PATH}/geos-${GEOS_VERSION} ${SOURCE_PATH}/geos
-tar -zvxf ${SFCGAL_FILE} -C ${SOURCE_PATH}
-mv ${SOURCE_PATH}/SFCGAL-v${SFCGAL_VERSION} ${SOURCE_PATH}/sfcgal
+
+if test ${OS} = 'Linux' ; then
+  tar -zvxf ${SFCGAL_FILE} -C ${SOURCE_PATH}
+  mv ${SOURCE_PATH}/SFCGAL-v${SFCGAL_VERSION} ${SOURCE_PATH}/sfcgal
+fi
+
 tar -zvxf ${GDAL_FILE} -C ${SOURCE_PATH}
 mv ${SOURCE_PATH}/gdal-${GDAL_VERSION} ${SOURCE_PATH}/gdal
+
 if test ${OS} = 'Darwin' ; then
   tar -zvxf ${GETTEXT_FILE} -C ${SOURCE_PATH}
   mv ${SOURCE_PATH}/gettext-${GETTEXT_VERSION} ${SOURCE_PATH}/gettext
@@ -179,12 +188,16 @@ make ${COMPILESPEED}
 sudo make install
 
 # Compile and install sfcgal
-cd ${SOURCE_PATH}/sfcgal
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} ..
-make ${COMPILESPEED}
-sudo make install
+# There is some error when sfcgal is compiled on MacOS.
+# So we  use sfcgal provied by "brew install sfcgal".
+if test ${OS} = 'Linux' ; then 
+  cd ${SOURCE_PATH}/sfcgal
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} ..
+  make ${COMPILESPEED}
+  sudo make install
+fi
 
 # Compile and install geos
 cd ${SOURCE_PATH}/geos
