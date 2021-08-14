@@ -1,0 +1,6 @@
+# sqlcarto extension
+comment = 'GIS tools written by Pancheng Wang'
+default_version = '1.0'
+module_pathname = '$libdir/sqlcarto'
+relocatable = true
+trusted = true
