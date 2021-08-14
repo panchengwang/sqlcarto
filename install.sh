@@ -1,5 +1,10 @@
 #!/bin/bash
 OS=`uname`
+CUR_DIR=$(cd `dirname $0`; pwd)
+cat $CUR_DIR/sqlcarto.sql > sqlcarto--1.0.sql
+cat $CUR_DIR/china_proj.sql >> sqlcarto--1.0.sql 
+cat $CUR_DIR/tile.sql >> sqlcarto--1.0.sql 
+cat $CUR_DIR/geo_morph.sql >> sqlcarto--1.0.sql
 
 PG_SRC_PATH=~/software/src/postgresql
 CONTRIB=${PG_SRC_PATH}/contrib

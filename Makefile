@@ -5,7 +5,8 @@ OBJS = \
 	ensure_libs.o \
 	china_trans.o \
 	china_proj.o \
-	geo_morph.o 
+	geo_morph.o \
+	tile.o
 
 EXTENSION = sqlcarto
 DATA = sqlcarto--1.0.sql
