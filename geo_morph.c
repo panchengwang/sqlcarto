@@ -169,6 +169,15 @@ static double distance_of(double x1,double y1, double x2,double y2){
   return sqrt( (x1-x2) * (x1-x2) + (y1-y2) * (y1-y2));
 }
 
+static double angle_of(POINT4D p1, POINT4D p2, POINT4D p3){
+  double a,b,c;
+  double angle;
+  a = distance_of(p1.x,p1.y,p3.x,p3.y);
+  b = distance_of(p2.x,p2.y,p3.x,p3.y);
+  c = distance_of(p1.x,p1.y,p2.x,p2.y);
+  angle = acos(( b*b + c*c - a*a) / (2.0*b*c));
+  return angle;
+}
 
 int pointarray_has_spines(POINTARRAY* pa, double angle_tolerance, int isring){
   uint32_t i;
@@ -180,21 +189,24 @@ int pointarray_has_spines(POINTARRAY* pa, double angle_tolerance, int isring){
     return LW_FAILURE;
   }
 
-  for(i=0;i<pa->npoints-3; i++){
-    getPoint4d_p(pa, i, &p1);
-    getPoint4d_p(pa, i+1, &p2);
-    getPoint4d_p(pa, i+2, &p3);
-    a = distance_of(p1.x,p1.y,p3.x,p3.y);
-    b = distance_of(p2.x,p2.y,p3.x,p3.y);
-    c = distance_of(p1.x,p1.y,p2.x,p2.y);
-    angle = acos(( b*b + c*c - a*a) / (2.0*b*c));
+  for(i=1;i<=pa->npoints-2; i++){
+    getPoint4d_p(pa, i-1, &p1);
+    getPoint4d_p(pa, i, &p2);
+    getPoint4d_p(pa, i+1, &p3);
+    angle = angle_of(p1,p2,p3);
     if(angle < angle_tolerance * M_PI/180.0){
       return LW_SUCCESS;
     }
   }
 
 	if ( isring == 1) {
-		
+		getPoint4d_p(pa,pa->npoints-2,&p1);
+    getPoint4d_p(pa,0);
+    getPoint4d_p(pa,1);
+    angle = angle_of(p1,p2,p3);
+    if(angle < angle_tolerance * M_PI/180.0){
+      return LW_SUCCESS;
+    }
 	}
   return LW_FAILURE;
 }
