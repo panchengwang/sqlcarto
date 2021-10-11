@@ -1,8 +1,8 @@
-create extension "uuid-ossp" ;
-create extension postgis;
-create extension postgis_sfcgal; 
-create extension postgis_topology;
-create extension sqlcarto;
+-- create extension "uuid-ossp" ;
+-- create extension postgis;
+-- create extension postgis_sfcgal; 
+-- create extension postgis_topology;
+-- create extension sqlcarto;
 
 begin;
 
@@ -36,5 +36,14 @@ select
   sc_z(t) as z
 from 
   tile_test;
+
+
+\echo Test  .............................................. 
+
+select sc_ensure_id('public','testdata');
+\d testdata
+
+select count(1) from testdata where sc_has_spines(geom,3);
+select __id from testdata where sc_has_spines(geom,3);
 
 end;

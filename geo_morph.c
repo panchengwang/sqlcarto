@@ -181,8 +181,7 @@ static double angle_of(POINT4D p1, POINT4D p2, POINT4D p3){
 
 int pointarray_has_spines(POINTARRAY* pa, double angle_tolerance, int isring){
   uint32_t i;
-  POINT4D p1,p2,p3;
-  double a,b,c;
+  POINT4D p1,p2,p3; 
   double angle;
 
   if(pa->npoints <= 4){
@@ -201,8 +200,8 @@ int pointarray_has_spines(POINTARRAY* pa, double angle_tolerance, int isring){
 
 	if ( isring == 1) {
 		getPoint4d_p(pa,pa->npoints-2,&p1);
-    getPoint4d_p(pa,0);
-    getPoint4d_p(pa,1);
+    getPoint4d_p(pa,0,&p2);
+    getPoint4d_p(pa,1,&p3);
     angle = angle_of(p1,p2,p3);
     if(angle < angle_tolerance * M_PI/180.0){
       return LW_SUCCESS;
