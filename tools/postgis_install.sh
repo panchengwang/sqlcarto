@@ -12,12 +12,24 @@ echo "==      加速有两个作用："
 echo "==        1 download 加速"
 echo "==        2 Compile and install 加速"
 
+OS=`uname`
+
 # 下面的参数，请根据自己的实际情况作出修改
 # 源码目录
 SOURCE_PATH=~/software/src
 mkdir -p ${SOURCE_PATH}
 # 安装目录
 INSTALL_PATH=/usr/local/pgsql
+sudo mkdir /usr/local/pgsql
+export PATH=$INSTALL_PATH/bin:$INSTALL_PATH/lib:$PATH
+if test ${OS} = 'Linux' ; then
+  export LD_LIBRARY_PATH=$INSTALL_PATH/lib:$LD_LIBRARY_PATH
+fi
+
+if test ${OS} = 'Darwin' ; then
+  export DYLD_LIBRARY_PATH=$INSTALL_PATH/lib:$DYLD_LIBRARY_PATH
+fi
+
 # 安装是否加速
 SPEED_UP=0
 if [ $# -ge 1 ] && [ $1 == "speedup" ]; then
@@ -25,7 +37,7 @@ if [ $# -ge 1 ] && [ $1 == "speedup" ]; then
 fi
 
 
-OS=`uname`
+
 
 echo "==  安装依赖 ........ "
 # if test ${OS} = 'Darwin' ; then 
@@ -36,7 +48,7 @@ if test ${OS} = 'Linux' ; then
   source /etc/os-release
   case $ID in
     debian|ubuntu|devuan)
-      sudo apt install -y axel cmake libcgal-dev libxml2-dev libcurl4-openssl-dev libtiff-dev libreadline-dev libossp-uuid-dev libsqlite3-dev sqlite3 libprotobuf-dev protobuf-c-compiler
+      sudo apt install -y build-essential axel cmake libcgal-dev libxml2-dev libcurl4-openssl-dev libtiff-dev libreadline-dev libossp-uuid-dev libsqlite3-dev sqlite3 libprotobuf-dev protobuf-c-compiler
       sudo apt install -y libprotobuf-c-dev
       ;;
     centos|fedora|rhel)
@@ -68,7 +80,10 @@ GEOS_VERSION=3.9.1
 GDAL_VERSION=3.3.1
 SFCGAL_VERSION=1.3.8
 GETTEXT_VERSION=0.21
-PG_URL=https://ftp.postgresql.org/pub/source/v${PG_VERSION}/postgresql-${PG_VERSION}.tar.gz
+# 由于众所周知的原因，有些时候域名解析器不能很好的解析ftp.postgresql.org
+# PG_URL=https://ftp.postgresql.org/pub/source/v${PG_VERSION}/postgresql-${PG_VERSION}.tar.gz
+# 因此采用IP直接下载，87.238.57.227没有采用经过认证的证书，只能使用http协议
+PG_URL=http://87.238.57.227/pub/source/v${PG_VERSION}/postgresql-${PG_VERSION}.tar.gz
 PROJ_URL=https://download.osgeo.org/proj/proj-${PROJ_VERSION}.tar.gz
 POSTGIS_URL=https://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz
 GEOS_URL=http://download.osgeo.org/geos/geos-${GEOS_VERSION}.tar.bz2
@@ -236,3 +251,5 @@ cd ${SOURCE_PATH}/postgis
 make ${COMPILESPEED}
 sudo make install
 
+echo "安装完成"
+echo "请记得将${INSTALL_PATH}加入PATH环境变量中"
