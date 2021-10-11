@@ -180,6 +180,10 @@ sudo make install
 cd contrib/uuid-ossp
 make 
 sudo make install
+cd ..
+cd contrib/pgcrypto
+make 
+sudo make install
 
 # Compile and install proj4
 cd ${SOURCE_PATH}/proj
