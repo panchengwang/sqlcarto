@@ -184,6 +184,12 @@ cd ..
 cd contrib/pgcrypto
 make 
 sudo make install
+cd ../contrib/dblink
+make
+sudo make install
+cd ../contrib/postgres_fdw
+make
+sudo make install
 
 # Compile and install proj4
 cd ${SOURCE_PATH}/proj
