@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e 
+
 echo "======================================="
 echo "==  开源空间数据库Compile and install 安装脚本              "
 echo "==  作者：pcwang                      "
@@ -20,7 +22,7 @@ SOURCE_PATH=~/software/src
 mkdir -p ${SOURCE_PATH}
 # 安装目录
 INSTALL_PATH=/usr/local/pgsql
-sudo mkdir /usr/local/pgsql
+sudo mkdir -p /usr/local/pgsql
 export PATH=$INSTALL_PATH/bin:$INSTALL_PATH/lib:$PATH
 if test ${OS} = 'Linux' ; then
   export LD_LIBRARY_PATH=$INSTALL_PATH/lib:$LD_LIBRARY_PATH
@@ -140,27 +142,34 @@ fi
 
 
 echo "==      finish donload sources , unzip .....    "
+rm -rf ${SOURCE_PATH}/postgresql
 tar -zvxf ${PG_FILE} -C ${SOURCE_PATH} 
 mv ${SOURCE_PATH}/postgresql-${PG_VERSION} ${SOURCE_PATH}/postgresql
 
+rm -rf ${SOURCE_PATH}/proj
 tar -zvxf ${PROJ_FILE} -C ${SOURCE_PATH}
 mv ${SOURCE_PATH}/proj-${PROJ_VERSION} ${SOURCE_PATH}/proj
 
+rm -rf ${SOURCE_PATH}/postgis
 tar -zvxf ${POSTGIS_FILE} -C ${SOURCE_PATH}
 mv ${SOURCE_PATH}/postgis-${POSTGIS_VERSION} ${SOURCE_PATH}/postgis
 
+rm -rf ${SOURCE_PATH}/geos
 tar -jvxf ${GEOS_FILE} -C ${SOURCE_PATH}
 mv ${SOURCE_PATH}/geos-${GEOS_VERSION} ${SOURCE_PATH}/geos
 
 if test ${OS} = 'Linux' ; then
+  rm -rf ${SOURCE_PATH}/sfcgal
   tar -zvxf ${SFCGAL_FILE} -C ${SOURCE_PATH}
   mv ${SOURCE_PATH}/SFCGAL-v${SFCGAL_VERSION} ${SOURCE_PATH}/sfcgal
 fi
 
+rm -rf ${SOURCE_PATH}/gdal
 tar -zvxf ${GDAL_FILE} -C ${SOURCE_PATH}
 mv ${SOURCE_PATH}/gdal-${GDAL_VERSION} ${SOURCE_PATH}/gdal
 
 if test ${OS} = 'Darwin' ; then
+  rm -rf ${SOURCE_PATH}/gettext
   tar -zvxf ${GETTEXT_FILE} -C ${SOURCE_PATH}
   mv ${SOURCE_PATH}/gettext-${GETTEXT_VERSION} ${SOURCE_PATH}/gettext
 fi
@@ -195,14 +204,13 @@ sudo make install
 cd contrib/uuid-ossp
 make 
 sudo make install
-cd ..
-cd contrib/pgcrypto
+cd ${SOURCE_PATH}/postgresql/contrib/pgcrypto
 make 
 sudo make install
-cd ../contrib/dblink
+cd ${SOURCE_PATH}/postgresql/contrib/dblink
 make
 sudo make install
-cd ../contrib/postgres_fdw
+cd ${SOURCE_PATH}/postgresql/contrib/postgres_fdw
 make
 sudo make install
 
@@ -251,5 +259,19 @@ cd ${SOURCE_PATH}/postgis
 make ${COMPILESPEED}
 sudo make install
 
-echo "安装完成"
-echo "请记得将${INSTALL_PATH}加入PATH环境变量中"
+echo "安装完成, 设置PATH环境变量"
+
+PATH_LINE=`grep -e "${INSTALL_PATH}/bin" /etc/profile`
+
+if [ -z "${PATH_LINE}" ]; then 
+  echo "export PATH=${INSTALL_PATH}/bin:$PATH" | sudo tee -a  /etc/profile
+
+  if [ "${OS}" == 'Darwin' ]; then
+    echo "export DYLD_LIBRARY_PATH=${INSTALL_PATH}/lib:$DYLD_LIBRARY_PATH" | sudo tee -a /etc/profile
+  fi
+
+  if [ "${OS}" == 'Linux' ]; then
+    echo "export LD_LIBRARY_PATH=${INSTALL_PATH}/lib:$LD_LIBRARY_PATH" | sudo tee -a /etc/profile
+  fi
+  source /etc/profile
+fi
