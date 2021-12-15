@@ -246,6 +246,18 @@ int pointarray_remove_spines(POINTARRAY* pa, double angle_tolerance, int isring)
     }
 	}
 
+	if ( isring == 1) {
+		getPoint4d_p(pa,pa->npoints-2,&p1);
+    getPoint4d_p(pa,0,&p2);
+    getPoint4d_p(pa,1,&p3);
+    angle = angle_of(p1,p2,p3);
+    if(angle < angle_tolerance * M_PI/180.0){
+			ptarray_remove_point(pa,0);
+			getPoint4d_p(pa,0,&p1);
+			ptarray_set_point4d(pa,pa->npoints-1,&p1);
+    }
+	}
+
 	return LW_SUCCESS;
 }
 

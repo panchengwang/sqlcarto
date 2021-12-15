@@ -27,7 +27,12 @@ AS '$libdir/sqlcarto','remove_spines'
 
 
 
-
+-- 形状指数，和圆比较
+create or replace function sc_shape_index(geo geometry) returns float8 as
+$$
+	select st_perimeter($1)/(2.0* sqrt(pi()*st_area($1)));
+$$
+language 'sql';
 
 
 

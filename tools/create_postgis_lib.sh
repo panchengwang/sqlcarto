@@ -18,7 +18,8 @@ fi
 
 # Linux
 if test ${OS} = 'Linux' ; then
+
   gcc -shared -o $CUR_DIR/libs/libpostgis.so ${POSTGIS_SRC_PATH}/liblwgeom/*.o ${POSTGIS_SRC_PATH}/libpgcommon/*.o ${POSTGIS_SRC_PATH}/deps/ryu/*.o
 fi
 
-
+ls -l $CUR_DIR/libs

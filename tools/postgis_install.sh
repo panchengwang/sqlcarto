@@ -53,12 +53,53 @@ if test ${OS} = 'Linux' ; then
       sudo apt install -y build-essential axel cmake libcgal-dev libxml2-dev libcurl4-openssl-dev libtiff-dev libreadline-dev libossp-uuid-dev libsqlite3-dev sqlite3 libprotobuf-dev protobuf-c-compiler
       sudo apt install -y libprotobuf-c-dev
       ;;
-    centos|fedora|rhel)
+    centos)
       yumdnf="yum"
-      if test "$(echo "$VERSION_ID >= 22" | bc)" -ne 0; then
-          yumdnf="dnf"
-      fi
-      sudo $yumdnf install -y axel cmake cgal-devel xml2-devel curl4-openssl-devel libtiff-dev readline-devel uuid-devel libsqlite3-dev sqlite3 libprotobuf-dev protobuf-c-compiler libprotobuf-c-dev
+      # if test "$(echo "$VERSION_ID >= 22" | bc)" -ne 0; then
+      #     yumdnf="dnf"
+      # fi
+      sudo $yumdnf install -y epel-release
+      sudo $yumdnf install -y snapd
+      # sudo setenforce 0
+      sudo systemctl enable --now snapd.socket
+      sudo unlink /snap
+      sudo ln -s /var/lib/snapd/snap /snap
+      export PATH=/snap/bin:$PATH
+      sudo snap install  axel 
+      # 安装支持库
+      sudo $yumdnf install -y cmake gmp-devel mpfr-devel boost boost-devel \
+        mesa-libGL-devel mesa-libGLU-devel libxml2-devel openssl openssl-devel \
+        libtiff-devel readline-devel libuuid-devel \
+        glibc-headers \
+        sqlite sqlite-devel \
+        protobuf protobuf-c protobuf-c-compiler protobuf-c-devel protobuf-compiler \
+        curl libcurl libcurl-devel \
+        autoconf automake gcc gcc-c++ kernel-devel \
+        gettext gettext-devel libuuid-devel uuid
+
+      # centos8 软件库里的uuid, uuid-devel不能很好地支持postgresql的扩展模块，下载源码自行编译安装uuid
+      wget -c https://www.mirrorservice.org/sites/ftp.ossp.org/pkg/lib/uuid/uuid-1.6.2.tar.gz
+      # 经测试，sfcgal只能在较低版本的cgal上编译，这里采用5.0.4的cgal版本
+      wget -c -O ${SOURCE_PATH}/cgal-5.0.4.tar.gz https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/v5.0.4
+      
+      cd ${SOURCE_PATH}
+      rm -rf uuid-1.6.2
+      tar zvxf uuid-1.6.2.tar.gz
+      cd uuid-1.6.2
+      ./configure --prefix=/usr
+      make
+      sudo make install
+
+      cd ${SOURCE_PATH}
+      rm -rf cgal-5.0.4
+      tar zvxf cgal-5.0.4.tar.gz 
+      cd cgal-5.0.4
+      mkdir build
+      cd build
+      cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
+      sudo make install
+
+
       ;;
     *)
       exit 1
@@ -69,6 +110,22 @@ if test ${OS} = 'Linux' ; then
 fi
 
 
+echo "== 设置PATH、LD_LIBRARY_PATH环境变量 ......."
+
+PATH_LINE=`grep -e "${INSTALL_PATH}/bin" /etc/profile`
+
+if [ -z "${PATH_LINE}" ]; then 
+  echo "export PATH=${INSTALL_PATH}/bin:$PATH" | sudo tee -a  /etc/profile
+
+  if [ "${OS}" == 'Darwin' ]; then
+    echo "export DYLD_LIBRARY_PATH=${INSTALL_PATH}/lib:$DYLD_LIBRARY_PATH" | sudo tee -a /etc/profile
+  fi
+
+  if [ "${OS}" == 'Linux' ]; then
+    echo "export LD_LIBRARY_PATH=${INSTALL_PATH}/lib:${INSTALL_PATH}/lib64:$LD_LIBRARY_PATH" | sudo tee -a /etc/profile
+  fi
+  source /etc/profile
+fi
 
 
 
@@ -239,8 +296,20 @@ make ${COMPILESPEED}
 sudo make install
 
 # Compile and install gdal
+GEOS_CONFIG=${INSTALL_PATH}/bin/geos-config
+SFCGAL_CONFIG=${INSTALL_PATH}/bin/sfcgal-config
+if test ${OS} = 'Darwin' ; then 
+  SFCGAL_CONFIG=yes
+fi
 cd ${SOURCE_PATH}/gdal
-./configure --prefix=${INSTALL_PATH} --with-proj=${INSTALL_PATH} --with-sfcgal=yes --with-pg=yes PQ_CFLAGS="-I${INSTALL_PATH}/include" PQ_LIBS="-L${INSTALL_PATH}/lib -lpq"
+./configure --prefix=${INSTALL_PATH} \
+  --with-proj=${INSTALL_PATH} \
+  --with-sfcgal=${SFCGAL_CONFIG} \
+  --with-geos=${GEOS_CONFIG} \
+  --with-pg=yes \
+  PQ_CFLAGS="-I${INSTALL_PATH}/include" \
+  PQ_LIBS="-L${INSTALL_PATH}/lib -lpq"
+
 make ${COMPILESPEED}
 sudo make install
 
@@ -259,19 +328,3 @@ cd ${SOURCE_PATH}/postgis
 make ${COMPILESPEED}
 sudo make install
 
-echo "安装完成, 设置PATH环境变量"
-
-PATH_LINE=`grep -e "${INSTALL_PATH}/bin" /etc/profile`
-
-if [ -z "${PATH_LINE}" ]; then 
-  echo "export PATH=${INSTALL_PATH}/bin:$PATH" | sudo tee -a  /etc/profile
-
-  if [ "${OS}" == 'Darwin' ]; then
-    echo "export DYLD_LIBRARY_PATH=${INSTALL_PATH}/lib:$DYLD_LIBRARY_PATH" | sudo tee -a /etc/profile
-  fi
-
-  if [ "${OS}" == 'Linux' ]; then
-    echo "export LD_LIBRARY_PATH=${INSTALL_PATH}/lib:$LD_LIBRARY_PATH" | sudo tee -a /etc/profile
-  fi
-  source /etc/profile
-fi
