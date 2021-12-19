@@ -16,6 +16,13 @@ $$
 language 'sql';
 
 
+create or replace function sqlcarto_version() returns json as 
+$$
+  select sqlcarto_info();
+$$
+language 'sql';
+
+
 create or replace function sc_uuid() returns text as
 $$
   select replace(gen_random_uuid()::text,'-','');
