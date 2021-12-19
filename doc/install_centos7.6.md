@@ -81,7 +81,7 @@ wget -c http://download.osgeo.org/gdal/3.3.1/gdal-3.3.1.tar.gz
 wget --no-check-certificate -c https://www.sqlite.org/2021/sqlite-autoconf-3370000.tar.gz
 wget --no-check-certificate -c https://github.com/protocolbuffers/protobuf/releases/download/v3.19.1/protobuf-cpp-3.19.1.tar.gz
 wget --no-check-certificate -c  https://github.com/protobuf-c/protobuf-c/releases/download/v1.4.0/protobuf-c-1.4.0.tar.gz
-
+wget --no-check-certificate -O sqlcarto-0.0.tar.gz -c https://github.com/panchengwang/sqlcarto/archive/refs/tags/v0.0.tar.gz
 ```
 
 ### 源码编译与安装
@@ -189,6 +189,7 @@ make
 sudo make install
 cd contrib/uuid-ossp
 make 
+sudo make install
 cd ../..
 sudo make install
 cd contrib/pgcrypto
@@ -268,6 +269,48 @@ cd postgis
 make
 sudo make install
 cd ..
+```
+
+#### 安装sqlcarto扩展
+```shell
+tar zvxf sqlcarto-0.0.tar.gz
+mv sqlcarto-0.0 sqlcarto
+cd sqlcarto
+```
+修改tools目录下的create_postgis_lib.sh文件，将第7行的
+```shell
+POSTGIS_SRC_PATH=~/software/src/postgis
+```
+根据你的具体情况设置成postgis的源文件目录（此目录还应该是编译过的）。缺省为~/software/src/postgis。
+
+同样还需修改install.sh文件，设置第三行的postgresql源文件目录。
+```shell
+PG_SRC_PATH=~/software/src/postgresql
+```
+
+执行安装脚本：
+```shell
+sh install.sh
+cd ..
+```
+
+#### 测试是否安装成功
+
+使用下面的脚本:
+```shell
+mkdir ~/database
+initdb -D ~/database -E utf8
+pg_ctl -D ~/database start
+createdb testdb
+psql -d testdb -c 'create extension "uuid-ossp"; '
+psql -d testdb -c 'create extension "postgis"; '
+psql -d testdb -c 'create extension "postgis_topology"; '
+psql -d testdb -c 'create extension "pgcrypto"; '
+psql -d testdb -c 'create extension "sqlcarto"; '
+psql -d testdb -c 'select sqlcarto_version();'
+dropdb testdb
+pg_ctl -D ~/database stop
+rm -rf ~/database
 ```
 
 ### 安装后的清理工作
