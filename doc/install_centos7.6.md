@@ -105,6 +105,8 @@ source /etc/profile
 也可以不执行上面的命令，直接注销，重新登录。
 
 #### 编译安装protobuf
+protobuf-c需要protobuf支持。
+
 ```shell
 tar zvxf protobuf-cpp-3.19.1.tar.gz
 mv protobuf-3.19.1 protobuf
@@ -116,6 +118,7 @@ cd ..
 ```
 
 #### 编译安装protobuf-c
+postgis需要protobuf-c支持。
 ```shell
 tar zvxf protobuf-c-1.4.0.tar.gz
 mv protobuf-c-1.4.0 protobuf-c
@@ -127,6 +130,7 @@ cd ..
 ```
 
 #### 编译安装uuid
+sqlcarto会使用uuid来保持id的唯一性。
 ```shell
 tar -zvxf uuid-1.6.2.tar.gz 
 mv uuid-1.6.2 uuid
@@ -180,6 +184,8 @@ cd ../..
 ```
 
 #### 编译postgresql
+基础数据库
+
 ```shell
 tar zvxf postgresql-13.3.tar.gz
 mv postgresql-13.3 postgresql
