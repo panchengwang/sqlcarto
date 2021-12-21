@@ -6,7 +6,7 @@
 | 作者  | pcwang（麓山老将) |
 | ------------- | ------------- |
 | QQ   | 593723812  |
-| EMail  | wang_wang_lao@163.com  |
+| EMail  | sqlcarto@163.com , sqlcarto@gmail.com |
 
 ----------
 
