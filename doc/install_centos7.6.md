@@ -37,17 +37,6 @@ postgres  ALL=(ALL)       NOPASSWD:ALL
 
 
 ### 依赖包安装
-下面的命令请使用管理员用户运行：
-
-```shell
-yum install -y cmake3 gmp-devel mpfr-devel uuid uuid-devel mesa-libGL-devel mesa-libGLU-devel libxml2-devel openssl openssl-devel  libtiff-devel readline-devel libuuid-devel glibc-headers  curl libcurl libcurl-devel autoconf automake gcc gcc-c++ kernel-devel gettext gettext-devel bzip2
-```
-
-cgal需要cmake3的支持：
-
-```shell
-ln -s /usr/bin/cmake3 /usr/bin/cmake
-```
 
 gcc、g++ 升级到9
 
@@ -62,6 +51,31 @@ echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
 退出系统，重新登录。
 
 
+下面的命令请使用管理员用户运行：
+
+```shell
+yum install -y wget cmake3 gmp-devel mpfr-devel uuid uuid-devel mesa-libGL-devel mesa-libGLU-devel libxml2-devel openssl openssl-devel  libtiff-devel readline-devel libuuid-devel glibc-headers  curl libcurl libcurl-devel autoconf automake gcc gcc-c++ kernel-devel gettext gettext-devel bzip2
+```
+
+cgal需要cmake3的支持：
+
+```shell
+ln -s /usr/bin/cmake3 /usr/bin/cmake
+```
+
+如果使用yum install -y cmake3 显示不能找到cmake3, 则必须下载最新的cmake源码，安装cmake
+```shell
+wget -c https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1.tar.gz
+tar zvxf cmake-3.22.1.tar.gz
+cd cmake-3.22.1
+./configure --prefix=/usr
+make
+sudo make install
+```
+
+
+
+
 ### 源码下载
 
 ```shell
@@ -69,6 +83,8 @@ su postgres
 cd ~
 mkdir -p software/src
 cd software/src
+wget --no-check-certificate -c https://github.com/protocolbuffers/protobuf/releases/download/v3.19.1/protobuf-cpp-3.19.1.tar.gz
+wget --no-check-certificate -c  https://github.com/protobuf-c/protobuf-c/releases/download/v1.4.0/protobuf-c-1.4.0.tar.gz
 wget --no-check-certificate -c https://www.mirrorservice.org/sites/ftp.ossp.org/pkg/lib/uuid/uuid-1.6.2.tar.gz
 wget --no-check-certificate -c  https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz
 wget -O cgal-5.0.4.tar.gz -c  https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/v5.0.4
@@ -79,8 +95,6 @@ wget -c http://download.osgeo.org/geos/geos-3.9.1.tar.bz2
 wget --no-check-certificate -c https://gitlab.com/Oslandia/SFCGAL/-/archive/v1.3.8/SFCGAL-v1.3.8.tar.gz
 wget -c http://download.osgeo.org/gdal/3.3.1/gdal-3.3.1.tar.gz
 wget --no-check-certificate -c https://www.sqlite.org/2021/sqlite-autoconf-3370000.tar.gz
-wget --no-check-certificate -c https://github.com/protocolbuffers/protobuf/releases/download/v3.19.1/protobuf-cpp-3.19.1.tar.gz
-wget --no-check-certificate -c  https://github.com/protobuf-c/protobuf-c/releases/download/v1.4.0/protobuf-c-1.4.0.tar.gz
 wget --no-check-certificate -O sqlcarto-0.0.tar.gz -c https://github.com/panchengwang/sqlcarto/archive/refs/tags/v0.0.tar.gz
 ```
 
