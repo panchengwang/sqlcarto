@@ -35,6 +35,7 @@ ifeq ($(shell uname),Darwin)
 		$(shell sfcgal-config --libs) \
 		$(shell gdal-config --libs) \
 		-lproj \
+		-ljson-c \
 		./tools/libs/libpostgis.a
 endif
 ifeq ($(shell uname),Linux)
@@ -44,6 +45,7 @@ ifeq ($(shell uname),Linux)
 		$(shell sfcgal-config --libs) \
 		$(shell gdal-config --libs) \
 		-lproj \
+		-ljson-c \
 		-lpostgis 
 endif
 

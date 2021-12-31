@@ -134,7 +134,7 @@ cd SFCGAL-1.3.8
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} ..
-make 
+make -j 4
 sudo make install
 ```
 
@@ -147,7 +147,7 @@ cd ${SDB_SRC}
 tar zvxf libxml2-2.9.12.tar.gz
 cd libxml2-2.9.12
 ./configure --prefix=${INSTALL_PATH}
-make
+make -j 4
 sudo make install
 ```
 
@@ -261,8 +261,8 @@ cd ${SDB_SRC}
 tar zvxf postgis-3.2.0.tar.gz
 mv postgis-3.2.0 postgis
 cd postgis
-./configure --prefix=${INSTALL_PATH} --with-sfcgal
-make
+./configure --prefix=${INSTALL_PATH} --with-sfcgal --with-jsondir=${INSTALL_PATH}
+make 
 sudo make install
 
 ```
