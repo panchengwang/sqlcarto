@@ -4,7 +4,7 @@
 # we created libpostgis.so(linux) or libpostgis.a(Mac) to support sqlcarto extension.
 
 
-POSTGIS_SRC_PATH=~/software/src/postgis
+POSTGIS_SRC_PATH=~/software/sdb/postgis
 
 OS=`uname`
 

@@ -50,8 +50,7 @@ if test ${OS} = 'Linux' ; then
   source /etc/os-release
   case $ID in
     debian|ubuntu|devuan)
-      sudo apt install -y build-essential axel cmake libcgal-dev libxml2-dev libcurl4-openssl-dev libtiff-dev libreadline-dev libossp-uuid-dev libsqlite3-dev sqlite3 libprotobuf-dev protobuf-c-compiler
-      sudo apt install -y libprotobuf-c-dev
+      sudo apt install -y build-essential wget axel cmake libcgal-dev libxml2-dev libcurl4-openssl-dev libtiff-dev libreadline-dev libossp-uuid-dev libsqlite3-dev sqlite3 libprotobuf-dev protobuf-c-compiler libprotobuf-c-dev
       ;;
     centos)
       yumdnf="yum"

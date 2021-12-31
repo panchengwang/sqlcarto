@@ -1,4 +1,4 @@
-## PostGIS/PostgreSQL安装手册(CentOS 7.x)
+## SQLCarto/PostGIS/PostgreSQL安装手册(CentOS 7.x)
 
 
 ----------

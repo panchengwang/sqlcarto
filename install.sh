@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PG_SRC_PATH=~/software/src/postgresql
+PG_SRC_PATH=~/software/sdb/postgresql
 CONTRIB=${PG_SRC_PATH}/contrib
 
 OS=`uname`
