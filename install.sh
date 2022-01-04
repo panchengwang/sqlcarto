@@ -25,3 +25,6 @@ if test ${OS} = 'Linux' ; then
 fi 
 make 
 sudo make install
+
+
+make -C tools
