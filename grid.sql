@@ -9,13 +9,17 @@ create or replace function sc_create_grid(
 declare
   sqlstr text;
   fullname varchar;
+  firstid bigint;
+  lastid bigint;
 begin
+  firstid := startid;
   if startid < 0 then 
-    raise EXCEPTION '%','startid < 0';
+    firstid := 0;
   end if;
 
+  lastid := endid;
   if endid >= nrows * ncols then 
-    raise EXCEPTION '%','endid too large';
+    lastid := nrows * ncols - 1;
   end if;
 
   fullname := quote_ident(schemaname) || '.' || quote_ident(gridname);
@@ -28,7 +32,7 @@ begin
   execute sqlstr;
 
   sqlstr := '
-    insert into ' || fullname || '(_id) select _id from generate_series(' || startid || ',' || endid || ') as _id
+    insert into ' || fullname || '(_id) select _id from generate_series(' || firstid || ',' || lastid || ') as _id
   ';
   execute sqlstr;
 
