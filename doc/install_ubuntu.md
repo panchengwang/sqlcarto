@@ -38,7 +38,7 @@ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/pgsql/lib/pkgconfig
 
 ### 工具安装
 ```shell
-sudo apt install -y build-essential wget axel cmake libcgal-dev libxml2-dev libcurl4-openssl-dev libtiff-dev libreadline-dev libossp-uuid-dev libsqlite3-dev sqlite3 libprotobuf-dev protobuf-c-compiler libprotobuf-c-dev
+sudo apt install -y build-essential wget axel cmake libboost-all-dev  gettext libcgal-dev libxml2-dev libcurl4-openssl-dev libtiff-dev libreadline-dev libossp-uuid-dev libjson-c4 libjson-c-dev libsqlite3-dev sqlite3 libprotobuf-dev protobuf-c-compiler libprotobuf-c-dev libcairo2 libcairo2-dev
 ```
 
 ### 下载源码
@@ -66,7 +66,9 @@ git clone https://github.com/panchengwang/sqlcarto.git
 
 ### 编译安装
 
+<!--
 #### json-c
+unbuntu20.4带的libjson-c没有导出符号。自己重新编译安装一下
 ```shell
 cd ${SDB_SRC}
 unzip json-c.zip
@@ -122,7 +124,7 @@ cd mpfr-4.1.0
 ./configure --prefix=${INSTALL_PATH}
 make
 sudo make install
-```
+``` -->
 
 
 
@@ -142,7 +144,7 @@ sudo make install
 
 
 
-#### libxml2
+<!-- #### libxml2
 postgis需要libxml2。
 ```shell
 cd ${SDB_SRC}
@@ -151,7 +153,7 @@ cd libxml2-2.9.12
 ./configure --prefix=${INSTALL_PATH}
 make
 sudo make install
-```
+``` -->
 
 
 #### 编译postgresql
@@ -185,7 +187,7 @@ cd ../..
 ```
 
 
-#### sqlite3
+<!-- #### sqlite3
 proj4需要sqlite3支持，并且必须带上SQLITE_ENABLE_COLUMN_METADATA=1参数。
 
 ```shell
@@ -197,7 +199,7 @@ CFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1" ./configure --prefix=${INSTALL_PATH}
 make 
 sudo make install
 
-```
+``` -->
 
 
 #### 编译proj4
@@ -240,13 +242,13 @@ tar zvxf gdal-3.4.0.tar.gz
 mv gdal-3.4.0 gdal
 cd gdal
 
-./configure --prefix=${INSTALL_PATH} --with-pg=yes  PQ_CFLAGS="-I${INSTALL_PATH}/include" PQ_LIBS="-L${INSTALL_PATH}/lib -lpq" --with-libjson-c=${INSTALL_PATH} --with-sqlite3=${INSTALL_PATH} --with-proj=${INSTALL_PATH} --with-sfcgal=${INSTALL_PATH}/bin/sfcgal-config --with-geos=${INSTALL_PATH}/bin/geos-config   
-make -j 8
+./configure --prefix=${INSTALL_PATH} --with-pg=yes  PQ_CFLAGS="-I${INSTALL_PATH}/include" PQ_LIBS="-L${INSTALL_PATH}/lib -lpq"  --with-sqlite3=${INSTALL_PATH} --with-proj=${INSTALL_PATH} --with-sfcgal=${INSTALL_PATH}/bin/sfcgal-config --with-geos=${INSTALL_PATH}/bin/geos-config   
+make -j 4
 sudo make install 
 
 ```
 
-#### gettext
+<!-- #### gettext
 ```shell
 cd ${SDB_SRC}
 tar zvxf gettext-0.21.tar.gz
@@ -254,15 +256,16 @@ cd gettext-0.21
 ./configure --prefix=${INSTALL_PATH}
 make -j 8
 sudo make install
-```
+``` -->
 
 #### 编译postgis
+注意编译时的json选项问题。如果sqlcarto在使用的时候提示装载补了json库，请配置时使用--without-json选项。
 ```shell
 cd ${SDB_SRC}
 tar zvxf postgis-3.2.0.tar.gz
 mv postgis-3.2.0 postgis
 cd postgis
-./configure --prefix=${INSTALL_PATH} --with-sfcgal --with-jsondir=${INSTALL_PATH}
+./configure --prefix=${INSTALL_PATH} --with-sfcgal --with-projdir=${INSTALL_PATH} --with-jsondir=${INSTALL_PATH}
 make
 sudo make install
 

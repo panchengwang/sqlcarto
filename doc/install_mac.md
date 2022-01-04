@@ -59,6 +59,7 @@ wget -c http://download.osgeo.org/geos/geos-3.10.1.tar.bz2
 wget -c https://download.osgeo.org/proj/proj-8.2.0.tar.gz
 wget -O sfcgal-1.3.8.tar.gz -c https://github.com/Oslandia/SFCGAL/archive/refs/tags/v1.3.8.tar.gz
 wget --no-check-certificate -c http://download.osgeo.org/gdal/3.4.0/gdal-3.4.0.tar.gz
+git clone https://github.com/panchengwang/sqlcarto.git
 ```
 
 
