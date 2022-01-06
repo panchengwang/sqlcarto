@@ -10,10 +10,14 @@ CUR_DIR=$(cd `dirname $0`; pwd)
 VERSION=1.0
 cat $CUR_DIR/sqlcarto.sql > sqlcarto--${VERSION}.sql
 cat $CUR_DIR/china_proj.sql >> sqlcarto--${VERSION}.sql 
+cat $CUR_DIR/projection.sql >> sqlcarto--${VERSION}.sql
 cat $CUR_DIR/tile.sql >> sqlcarto--${VERSION}.sql 
 cat $CUR_DIR/geo_morph.sql >> sqlcarto--${VERSION}.sql
 cat $CUR_DIR/postgis_ext.sql >> sqlcarto--${VERSION}.sql
 cat $CUR_DIR/grid.sql >> sqlcarto--${VERSION}.sql
+cat $CUR_DIR/pg_utils.sql >> sqlcarto--${VERSION}.sql
+cat $CUR_DIR/topology.sql >> sqlcarto--${VERSION}.sql
+
 
 rm -rf $CONTRIB/sqlcarto
 cp -rf ../sqlcarto $CONTRIB/
