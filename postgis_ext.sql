@@ -51,3 +51,49 @@ begin
 end;
 $$
 language 'plpgsql';
+
+
+
+create or replace function st_dump_linestrings(geo geometry) returns setof geometry as 
+$$
+  select st_polygon_to_linestring($1);
+$$
+language 'sql';
+
+
+
+-- 获取multilinestring中每个线段的起点
+create or replace function st_startpoints(geo geometry) returns setof geometry as 
+$$
+  select st_startpoint((st_dump(st_linemerge($1))).geom);
+$$
+language 'sql';
+
+-- 获取multilinestring中每个线段的尾点
+create or replace function st_endpoints(geo geometry) returns setof geometry as 
+$$
+  select st_endpoint((st_dump(st_linemerge($1))).geom);
+$$
+language 'sql';
+
+
+
+-- 将linestring从parts打断
+create or replace function st_split_linestring(
+  geo geometry,
+  parts float8[]
+) returns setof geometry as 
+$$
+declare
+  startpt float8;
+  locpt float8;
+  sqlstr text;
+  i integer;
+begin
+  for i in 1..array_length(parts,1)-1 loop 
+    return next st_linesubstring(geo,parts[i],parts[i+1]);
+  end loop;
+  return;
+end;
+$$
+language 'plpgsql';
