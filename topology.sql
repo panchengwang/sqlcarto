@@ -10,16 +10,49 @@ declare
   sqlstr text;
   linefullname varchar;
   polygonfullname varchar;
+  toponame varchar;
   tableid varchar;
   ret varchar;
+  srid integer;
 begin
   linefullname := quote_ident(schemaname) || '.' || quote_ident(linetablename);
   polygonfullname := quote_ident(schemaname) || '.' || quote_ident(polygontablename);
   tableid := sc_uuid();
   ret := sc_node_from_linestrings(schemaname,linetablename,linegeoname,'node_' || tableid);
   ret := sc_linestring_to_arc(schemaname,linetablename,linegeoname,'node_' || tableid, '_geo', 'arc_'||tableid);
+  execute 'drop table ' || quote_ident(schemaname) || '.' || quote_ident('node_' || tableid);
+  srid := find_srid(schemaname,linetablename,linegeoname);
 
-  return '';
+  -- 下面这一句非常重要。由于浮点数运算的问题，会导致节点和弧段之间的运算产生：节点不在弧段、弧段穿越了节点等异常情况。
+  -- 采用st_snaptogrid将节点对齐到格网上，可以解决这些异常问题。
+  sqlstr := 'update ' || quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid) || ' set _geo = st_snaptogrid(_geo,0.000001)';
+  execute sqlstr;
+
+  toponame := 'topo_' || tableid;
+  execute 'select topology.CreateTopology(' || quote_literal(toponame) || ',' || srid || ',0.000001)';
+  execute 'select topology.addedge(' || quote_literal(toponame) || ',_geo) from ' ||  quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
+  sqlstr := '
+    select topology.Polygonize(' || quote_literal(toponame) || ')
+  ';
+  execute sqlstr;
+
+  sqlstr := 'create table ' || polygonfullname || '(
+      _id varchar(32) primary key default sc_uuid(),
+      _geo geometry(POLYGON,' || srid || ')
+    )';
+  execute sqlstr;
+  raise notice 'sqlstr: %', sqlstr;
+  raise notice 'srid: %', srid;
+
+  sqlstr := '
+    insert into ' || polygonfullname || '(_geo)
+      select topology.st_getfacegeometry(' || quote_literal(toponame) || ',face_id) as _geo from ' || quote_ident(toponame) || '.face where face_id <> 0
+  ';
+  execute sqlstr;
+
+  execute 'drop table ' || quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
+  execute 'select topology.droptopology(' || quote_literal(toponame) || ')';
+  return toponame;
 end;
 $$ language 'plpgsql';
 
