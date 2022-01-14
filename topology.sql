@@ -19,18 +19,27 @@ begin
   polygonfullname := quote_ident(schemaname) || '.' || quote_ident(polygontablename);
   tableid := sc_uuid();
   ret := sc_node_from_linestrings(schemaname,linetablename,linegeoname,'node_' || tableid);
+  raise notice 'node from linestrings: node_%',tableid;
+  sqlstr := 'update ' || quote_ident(schemaname) || '.' || quote_ident('node_' || tableid) || ' set _geo = st_snaptogrid(_geo,0.000001)';
+  execute sqlstr;
+
   ret := sc_linestring_to_arc(schemaname,linetablename,linegeoname,'node_' || tableid, '_geo', 'arc_'||tableid);
+  raise notice 'linestring to arc: arc_%',tableid;
   execute 'drop table ' || quote_ident(schemaname) || '.' || quote_ident('node_' || tableid);
+  
   srid := find_srid(schemaname,linetablename,linegeoname);
 
   -- 下面这一句非常重要。由于浮点数运算的问题，会导致节点和弧段之间的运算产生：节点不在弧段、弧段穿越了节点等异常情况。
   -- 采用st_snaptogrid将节点对齐到格网上，可以解决这些异常问题。
   sqlstr := 'update ' || quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid) || ' set _geo = st_snaptogrid(_geo,0.000001)';
   execute sqlstr;
+  execute 'delete from ' || quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid ) || ' where _geo is null or st_isempty(_geo)';
 
   toponame := 'topo_' || tableid;
   execute 'select topology.CreateTopology(' || quote_literal(toponame) || ',' || srid || ',0.000001)';
-  execute 'select topology.addedge(' || quote_literal(toponame) || ',_geo) from ' ||  quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
+  execute 'select topogeo_addlinestring(' || quote_literal(toponame) || ',_geo,0.000001) from ' ||  quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
+  -- 注意：千万不要用下面这一句，害苦我了
+  -- execute 'select topology.addedge(' || quote_literal(toponame) || ',_geo) from ' ||  quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
   sqlstr := '
     select topology.Polygonize(' || quote_literal(toponame) || ')
   ';
@@ -41,8 +50,8 @@ begin
       _geo geometry(POLYGON,' || srid || ')
     )';
   execute sqlstr;
-  raise notice 'sqlstr: %', sqlstr;
-  raise notice 'srid: %', srid;
+  -- raise notice 'sqlstr: %', sqlstr;
+  -- raise notice 'srid: %', srid;
 
   sqlstr := '
     insert into ' || polygonfullname || '(_geo)
@@ -179,7 +188,7 @@ begin
 
   -- 去除重复点
   sqlstr := 'create table ' || quote_ident(schemaname) || '.'  || quote_ident(nodetablename || '_temp') || '(
-    _id varchar(32) default sc_uuid(),
+    _id varchar(32) primary key default sc_uuid(),
     _geo geometry(POINT,' || srid || ')
     )';
   execute sqlstr ;
@@ -196,6 +205,9 @@ begin
     sqlstr := 'alter table ' || linefullname || ' rename _geo to ' || quote_ident(geoname) ;
     execute sqlstr;
   end if;
+
+  execute 'create index ' || quote_ident(nodetablename || '_geo_idx') || '
+     on ' || quote_ident(schemaname) || '.'  || quote_ident(nodetablename) || ' using gist(_geo)';
 
   return nodetablename;
 end;
@@ -244,7 +256,7 @@ begin
 
   sqlstr := '
     create table ' || arcfullname || '(
-      _id varchar(32) default sc_uuid(),
+      _id varchar(32) primary key default sc_uuid(),
       _geo geometry(LINESTRING,' || srid || ')
     )';
   execute sqlstr;
@@ -262,8 +274,9 @@ begin
         ' || linefullname || ' A,
         ' || nodefullname || ' B
       where 
-        st_intersects(A._geo,B._geo) or st_distance(A._geo, B._geo) < 0.000001
-      order by 
+        st_intersects(A._geo,B._geo) ' || 
+        ' or st_distance(A._geo, B._geo) < 0.000001 ' || 
+      'order by 
         A._id, part
       ) C
     group by 
@@ -271,7 +284,7 @@ begin
   ';
   for myrec1 in execute sqlstr loop 
     parts := myrec1.parts;
-    raise notice 'parts: %',parts;
+    -- raise notice 'parts: %',parts;
     if parts[array_length(parts,1)] < 1.0 then 
       parts := array_append(parts,1.0::float8);
     end if;
