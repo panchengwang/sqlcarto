@@ -17,6 +17,7 @@ cat $CUR_DIR/postgis_ext.sql >> sqlcarto--${VERSION}.sql
 cat $CUR_DIR/grid.sql >> sqlcarto--${VERSION}.sql
 cat $CUR_DIR/pg_utils.sql >> sqlcarto--${VERSION}.sql
 cat $CUR_DIR/topology.sql >> sqlcarto--${VERSION}.sql
+cat $CUR_DIR/webmaps.sql >> sqlcarto--${VERSION}.sql
 
 
 rm -rf $CONTRIB/sqlcarto
