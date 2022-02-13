@@ -8,6 +8,10 @@ OS=`uname`
 CUR_DIR=$(cd `dirname $0`; pwd)
 
 VERSION=1.0
+echo '重写postgis的拓扑创建函数createtopology'
+
+
+
 cat $CUR_DIR/sqlcarto.sql > sqlcarto--${VERSION}.sql
 cat $CUR_DIR/china_proj.sql >> sqlcarto--${VERSION}.sql 
 cat $CUR_DIR/projection.sql >> sqlcarto--${VERSION}.sql
