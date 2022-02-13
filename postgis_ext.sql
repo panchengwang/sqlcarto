@@ -102,6 +102,11 @@ language 'plpgsql';
 
 -- 下面的这段代码是postgis提供的
 -- sqlcarto作者对此做了修改
+drop function topology.createtopology(
+	atopology character varying,
+	srid integer,
+	prec double precision,
+	hasz boolean);
 CREATE OR REPLACE FUNCTION topology.createtopology(
 	atopology character varying,
 	srid integer,
