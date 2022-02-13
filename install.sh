@@ -9,6 +9,15 @@ CUR_DIR=$(cd `dirname $0`; pwd)
 
 VERSION=1.0
 echo '重写postgis的拓扑创建函数createtopology'
+EXTENSION_DIR=`pg_config --sharedir`/extension
+CONTROL_FILE=$EXTENSION_DIR/postgis_topology.control
+POSTGIS_VER=`grep 'default_version' $CONTROL_FILE | sed "s/.*'\(.*\)'/\1/g"`
+SQL_FILE=${EXTENSION_DIR}/postgis_topology--${POSTGIS_VER}.sql
+if [ ! -f ${SQL_FILE}.bak ]; then
+  sudo cp $SQL_FILE ${SQL_FILE}.bak
+fi
+sudo cp -f ${SQL_FILE}.bak ${SQL_FILE}
+sudo sh -c "cat ${CUR_DIR}/postgis_topology_patch.sql >> ${SQL_FILE}"
 
 
 
