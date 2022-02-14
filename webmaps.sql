@@ -46,6 +46,7 @@ declare
   retjson json;
 begin
   myurl := url || '?output=json&location=' || st_x(location) || ',' || st_y(location) || '&key=' || key || '&radius=0&extensions=all';
+  select http_set_curlopt('CURLOPT_SSL_VERIFYPEER','0');
   select 
 		content::json into retjson
 	from 
@@ -94,18 +95,20 @@ end;
 $$ language 'plpgsql';
 
 -- 测试
--- select sc_gaode_reverse_geocode_aois(
---   'https://restapi.amap.com/v3/geocode/regeo',
---   '{}'::json,
---   'bdd9e64a28e29966524899e518e09a3c',
---   'SRID=4326;POINT(112.99110419681632 28.13963812157232)'::geometry
--- );
+select sc_gaode_reverse_geocode_aois(
+  'https://restapi.amap.com/v3/geocode/regeo',
+  '{}'::json,
+  'f599fa220f499f97005e2cc7ef0d4846',
+  'SRID=4326;POINT(112.99110419681632 28.13963812157232)'::geometry
+);
+
+-- curl "https://restapi.amap.com/v3/geocode/regeo?output=json&location=112.99110419681632,28.13963812157232&key=f599fa220f499f97005e2cc7ef0d4846&radius=10&extensions=all"
 
 -- 测试
 -- select sc_gaode_reverse_geocode_pois(
 --   'https://restapi.amap.com/v3/geocode/regeo',
 --   '{}'::json,
---   'bdd9e64a28e29966524899e518e09a3c',
+--   'f599fa220f499f97005e2cc7ef0d4846',
 --   'SRID=4326;POINT(112.99110419681632 28.13963812157232)'::geometry
 -- );
 
