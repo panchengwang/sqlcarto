@@ -94,20 +94,20 @@ end;
 $$ language 'plpgsql';
 
 -- 测试
-select sc_gaode_reverse_geocode_aois(
-  'https://restapi.amap.com/v3/geocode/regeo',
-  '{}'::json,
-  'bdd9e64a28e29966524899e518e09a3c',
-  'SRID=4326;POINT(112.99110419681632 28.13963812157232)'::geometry
-);
+-- select sc_gaode_reverse_geocode_aois(
+--   'https://restapi.amap.com/v3/geocode/regeo',
+--   '{}'::json,
+--   'bdd9e64a28e29966524899e518e09a3c',
+--   'SRID=4326;POINT(112.99110419681632 28.13963812157232)'::geometry
+-- );
 
 -- 测试
-select sc_gaode_reverse_geocode_pois(
-  'https://restapi.amap.com/v3/geocode/regeo',
-  '{}'::json,
-  'bdd9e64a28e29966524899e518e09a3c',
-  'SRID=4326;POINT(112.99110419681632 28.13963812157232)'::geometry
-);
+-- select sc_gaode_reverse_geocode_pois(
+--   'https://restapi.amap.com/v3/geocode/regeo',
+--   '{}'::json,
+--   'bdd9e64a28e29966524899e518e09a3c',
+--   'SRID=4326;POINT(112.99110419681632 28.13963812157232)'::geometry
+-- );
 
 -- create or replace function furongqu_aois() returns varchar as $$
 -- declare
