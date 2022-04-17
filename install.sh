@@ -1,11 +1,11 @@
 #!/bin/bash
 # edit PG_SRC_PATH when needed
-PG_SRC_PATH=~/software/sdb/postgresql
 
-CONTRIB=${PG_SRC_PATH}/contrib
 
 OS=`uname`
 CUR_DIR=$(cd `dirname $0`; pwd)
+PG_SRC_PATH=$CUR_DIR/../postgresql
+CONTRIB=${PG_SRC_PATH}/contrib
 
 VERSION=1.0
 echo '重写postgis的拓扑创建函数createtopology'
@@ -31,6 +31,7 @@ cat $CUR_DIR/grid.sql >> sqlcarto--${VERSION}.sql
 cat $CUR_DIR/pg_utils.sql >> sqlcarto--${VERSION}.sql
 cat $CUR_DIR/topology.sql >> sqlcarto--${VERSION}.sql
 cat $CUR_DIR/webmaps.sql >> sqlcarto--${VERSION}.sql
+cat $CUR_DIR/miscellaneous.sql >> sqlcarto--${VERSION}.sql
 
 
 rm -rf $CONTRIB/sqlcarto
