@@ -52,3 +52,31 @@ begin
   return '_id';
 end;
 $$ language 'plpgsql';
+
+
+-- 判断某个表是否存在primary key
+create or replace function sc_has_primary_key(schemaname varchar, tablename varchar) returns boolean 
+as $$
+  select count(1) = 1 from information_schema.key_column_usage where table_schema=$1 and table_name=$2;
+$$ language 'sql';
+
+-- 获取primary字段名
+create or replace function sc_primary_key_column_name(schemaname varchar, tablename varchar) returns varchar
+as $$
+  select column_name from information_schema.key_column_usage where table_schema=$1 and table_name=$2 limit 1;
+$$ language 'sql';
+
+-- 判断某个字段是数字型还是非数字型
+create or replace function sc_column_is_numeric(schemaname varchar, tablename varchar, columnname varchar) returns boolean 
+as $$
+  select 
+    data_type in ('integer','smallint','bigint','double precision') 
+  from 
+    information_schema.columns 
+  where 
+    table_schema=$1
+    and 
+    table_name=$2
+    and 
+    column_name=$3;
+$$ language 'sql';
