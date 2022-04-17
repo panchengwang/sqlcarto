@@ -1,7 +1,7 @@
 /**
  *  此文件里面的代码没什么用
  *  仅仅是为了确保pangis.so能够链接到
- *    sfgcal、proj4、geos_c
+ *    sfgcal、proj4、geos_c、json-c
  *  而编写的无聊代码
  *  不要删哦
  */
@@ -9,6 +9,7 @@
 #include <proj.h>
 #include <SFCGAL/capi/sfcgal_c.h>
 #include "ensure_libs.h"
+#include <json-c/json.h>
 
 
 void ensure_geos_c_api(){
@@ -23,3 +24,6 @@ void ensure_proj4_api(){
   proj_context_create();
 }
 
+void ensure_json_c_api(){
+  json_object *jint = json_object_new_int(10);
+}
