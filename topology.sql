@@ -1,69 +1,124 @@
 -- 从线表生成polygon表
-create or replace function sc_linestring_to_polygon(
-  schemaname varchar,
-  linetablename varchar,
-  linegeoname varchar,
-  polygontablename varchar,
-  polygongeoname varchar
-) returns varchar as $$
-declare
-  sqlstr text;
-  linefullname varchar;
-  polygonfullname varchar;
-  toponame varchar;
-  tableid varchar;
-  ret varchar;
-  srid integer;
-begin
-  linefullname := quote_ident(schemaname) || '.' || quote_ident(linetablename);
-  polygonfullname := quote_ident(schemaname) || '.' || quote_ident(polygontablename);
-  tableid := sc_uuid();
-  ret := sc_node_from_linestrings(schemaname,linetablename,linegeoname,'node_' || tableid);
-  raise notice 'node from linestrings: node_%',tableid;
-  sqlstr := 'update ' || quote_ident(schemaname) || '.' || quote_ident('node_' || tableid) || ' set _geo = st_snaptogrid(_geo,0.000001)';
-  execute sqlstr;
+-- create or replace function sc_linestring_to_polygon(
+--   schemaname varchar,
+--   linetablename varchar,
+--   linegeoname varchar,
+--   polygontablename varchar,
+--   polygongeoname varchar
+-- ) returns varchar as $$
+-- declare
+--   sqlstr text;
+--   linefullname varchar;
+--   polygonfullname varchar;
+--   toponame varchar;
+--   tableid varchar;
+--   ret varchar;
+--   srid integer;
+-- begin
+--   linefullname := quote_ident(schemaname) || '.' || quote_ident(linetablename);
+--   polygonfullname := quote_ident(schemaname) || '.' || quote_ident(polygontablename);
+--   tableid := sc_uuid();
+--   ret := sc_node_from_linestrings(schemaname,linetablename,linegeoname,'node_' || tableid);
+--   raise notice 'node from linestrings: node_%',tableid;
+--   sqlstr := 'update ' || quote_ident(schemaname) || '.' || quote_ident('node_' || tableid) || ' set _geo = st_snaptogrid(_geo,0.000001)';
+--   execute sqlstr;
 
-  ret := sc_linestring_to_arc(schemaname,linetablename,linegeoname,'node_' || tableid, '_geo', 'arc_'||tableid);
-  raise notice 'linestring to arc: arc_%',tableid;
-  execute 'drop table ' || quote_ident(schemaname) || '.' || quote_ident('node_' || tableid);
+--   ret := sc_linestring_to_arc(schemaname,linetablename,linegeoname,'node_' || tableid, '_geo', 'arc_'||tableid);
+--   raise notice 'linestring to arc: arc_%',tableid;
+--   execute 'drop table ' || quote_ident(schemaname) || '.' || quote_ident('node_' || tableid);
   
-  srid := find_srid(schemaname,linetablename,linegeoname);
+--   srid := find_srid(schemaname,linetablename,linegeoname);
 
-  -- 下面这一句非常重要。由于浮点数运算的问题，会导致节点和弧段之间的运算产生：节点不在弧段、弧段穿越了节点等异常情况。
-  -- 采用st_snaptogrid将节点对齐到格网上，可以解决这些异常问题。
-  sqlstr := 'update ' || quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid) || ' set _geo = st_snaptogrid(_geo,0.000001)';
-  execute sqlstr;
-  execute 'delete from ' || quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid ) || ' where _geo is null or st_isempty(_geo)';
+--   -- 下面这一句非常重要。由于浮点数运算的问题，会导致节点和弧段之间的运算产生：节点不在弧段、弧段穿越了节点等异常情况。
+--   -- 采用st_snaptogrid将节点对齐到格网上，可以解决这些异常问题。
+--   sqlstr := 'update ' || quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid) || ' set _geo = st_snaptogrid(_geo,0.000001)';
+--   execute sqlstr;
+--   execute 'delete from ' || quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid ) || ' where _geo is null or st_isempty(_geo)';
 
-  toponame := 'topo_' || tableid;
-  execute 'select topology.CreateTopology(' || quote_literal(toponame) || ',' || srid || ',0.000001)';
-  execute 'select topogeo_addlinestring(' || quote_literal(toponame) || ',_geo,0.000001) from ' ||  quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
-  -- 注意：千万不要用下面这一句，害苦我了
-  -- execute 'select topology.addedge(' || quote_literal(toponame) || ',_geo) from ' ||  quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
+--   toponame := 'topo_' || tableid;
+--   execute 'select topology.CreateTopology(' || quote_literal(toponame) || ',' || srid || ',0.000001)';
+--   execute 'select topogeo_addlinestring(' || quote_literal(toponame) || ',_geo,0.000001) from ' ||  quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
+--   -- 注意：千万不要用下面这一句，害苦我了
+--   -- execute 'select topology.addedge(' || quote_literal(toponame) || ',_geo) from ' ||  quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
+--   sqlstr := '
+--     select topology.Polygonize(' || quote_literal(toponame) || ')
+--   ';
+--   execute sqlstr;
+
+--   sqlstr := 'create table ' || polygonfullname || '(
+--       _id varchar(32) primary key default sc_uuid(),
+--       _geo geometry(POLYGON,' || srid || ')
+--     )';
+--   execute sqlstr;
+--   -- raise notice 'sqlstr: %', sqlstr;
+--   -- raise notice 'srid: %', srid;
+
+--   sqlstr := '
+--     insert into ' || polygonfullname || '(_geo)
+--       select topology.st_getfacegeometry(' || quote_literal(toponame) || ',face_id) as _geo from ' || quote_ident(toponame) || '.face where face_id <> 0
+--   ';
+--   execute sqlstr;
+
+--   execute 'drop table ' || quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
+--   execute 'select topology.droptopology(' || quote_literal(toponame) || ')';
+--   return toponame;
+-- end;
+-- $$ language 'plpgsql';
+
+-- 从线表生成多边形表
+--  线表中的线不要求是弧段
+--  此函数会自行求交点、打断线、生成弧段，最后进行拓扑构建，从拓扑生成最终的多边形表
+--    schema_name 
+--    line_table_name 
+--    line_geo_name 
+--    polygon_table_name 
+--    polygon_geo_name 
+create or replace function sc_linestring_to_polygon(
+  schema_name varchar,
+  line_table_name varchar,
+  line_geo_name varchar,
+  polygon_table_name varchar,
+  polygon_geo_name varchar
+) returns varchar as 
+$$
+declare
+  topo_name varchar;
+  node_table_name varchar;
+  arc_table_name varchar;
+  srid integer;
+  sqlstr text;
+begin
+  srid := find_srid(schema_name,line_table_name, line_geo_name);
+
+  --  线求交，生成节点
+  perform sc_node_from_linestrings(schema_name,line_table_name,line_geo_name,node_table_name,'geom');
+  --  从线表和节点表生成弧段
+  perform sc_linestring_to_arc(schema_name,line_table_name,line_geo_nam,node_table_name,'geom',arc_table_name,'geom');
+  
+
+  topo_name := 't_' || sc_uuid() || '_topo';
+  perform topology.CreateTopology(topo_name,srid,0.000001);
   sqlstr := '
-    select topology.Polygonize(' || quote_literal(toponame) || ')
+    select topogeo_addlinestring(' || quote_literal(topo_name) || ',geom,0.000001) from ' || quote_ident(arc_table_name) || ' where geom is not null
   ';
   execute sqlstr;
+  perform topology.Polygonize(topo_name);
 
-  sqlstr := 'create table ' || polygonfullname || '(
-      _id varchar(32) primary key default sc_uuid(),
-      _geo geometry(POLYGON,' || srid || ')
+
+  sqlstr := 'create table ' || quote_ident(schema_name) || '.' || quote_ident(polygon_table_name) || '(
+      id varchar(32) primary key default sc_uuid(),
+      ' || quote_ident(polygon_geo_name) || ' geometry(POLYGON,' || srid || ')
     )';
   execute sqlstr;
-  -- raise notice 'sqlstr: %', sqlstr;
-  -- raise notice 'srid: %', srid;
-
-  sqlstr := '
-    insert into ' || polygonfullname || '(_geo)
-      select topology.st_getfacegeometry(' || quote_literal(toponame) || ',face_id) as _geo from ' || quote_ident(toponame) || '.face where face_id <> 0
-  ';
+  sqlstr := 'insert into ' || quote_ident(schema_name) || '.' || quote_ident(polygon_table_name) || '(' || quote_ident(polygon_geo_name) || ')
+      select topology.st_getfacegeometry(' || quote_literal(topo_name) || ',face_id) as _geo 
+      from ' || quote_ident(topo_name) || '.face where face_id <> 0';
   execute sqlstr;
-
-  execute 'drop table ' || quote_ident(schemaname) || '.' || quote_ident('arc_' || tableid);
-  execute 'select topology.droptopology(' || quote_literal(toponame) || ')';
-  return toponame;
+  perform topology.dropTopology(toponame);
+  return polygon_table_name;
 end;
 $$ language 'plpgsql';
+
 
 
 
@@ -73,11 +128,13 @@ $$ language 'plpgsql';
 --    linetablename 线表名
 --    geoname 线字段名
 --    nodetablename 节点表名
+--    nodegeoname 节点几何字段名
 create or replace function sc_node_from_linestrings(
   schemaname varchar,
   linetablename varchar,
   geoname varchar,
-  nodetablename varchar
+  nodetablename varchar,
+  nodegeoname varchar
 ) returns varchar as 
 $$
 declare
@@ -206,8 +263,13 @@ begin
     execute sqlstr;
   end if;
 
+  if nodegeoname <> '_geo' then
+    sqlstr := 'alter table ' || nodetablename || ' rename column _geo to ' || quote_ident(nodegeoname);
+    execute sqlstr;
+  end if;
+
   execute 'create index ' || quote_ident(nodetablename || '_geo_idx') || '
-     on ' || quote_ident(schemaname) || '.'  || quote_ident(nodetablename) || ' using gist(_geo)';
+     on ' || quote_ident(schemaname) || '.'  || quote_ident(nodetablename) || ' using gist(' || quote_ident(nodegeoname) || ')';
 
   return nodetablename;
 end;
@@ -224,7 +286,8 @@ create or replace function sc_linestring_to_arc(
   linegeoname varchar,
   nodetablename varchar,
   nodegeoname varchar,
-  arctablename varchar
+  arctablename varchar,
+  arcgeoname varchar
 ) returns varchar as 
 $$
 declare
@@ -237,6 +300,7 @@ declare
   arcfullname varchar;
   nodefullname varchar;
   ret varchar;
+  arc_id1 varchar; arc_id2 varchar;
 begin
   linefullname := quote_ident(schemaname) || '.' || quote_ident(linetablename);
   arcfullname := quote_ident(schemaname) || '.' || quote_ident(arctablename);
@@ -299,16 +363,67 @@ begin
     execute sqlstr;
   end loop;
 
+  ret := sc_remove_repeated_arcs(schemaname,arctablename,'_geo');
+
+-- 将假弧段（如1结点对应2弧段，则应该删除这个几点，并将2弧段连接起来）
+  sqlstr := '
+    with node_arc as
+    (
+      select
+        B._id as node_id,
+        A._id as arc_id
+      from 
+        ' || arcfullname || ' A,
+        ' || nodefullname || ' B
+      where
+        st_startpoint(A._geo) = B._geo 
+        or 
+        st_endpoint(A._geo) = B._geo
+    ), node_arc_num as (
+      select
+        node_id,
+        count(1) as num
+      from 
+        node_arc
+      group by node_id
+    )
+    select 
+      A.node_id,
+      array_agg(A.arc_id) as arc_ids
+    from 
+      node_arc A,
+      node_arc_num B
+    where 
+      B.num = 2
+      and 
+      A.node_id = B.node_id
+    group by A.node_id;
+  ';
+
+  for myrec1 in execute sqlstr loop 
+    sqlstr := 'insert into ' || arcfullname || '(_geo) 
+      select st_linemerge(st_union(_geo)) from ' || arcfullname || ' 
+      where _id = any(' || quote_literal(myrec1.arc_ids) || '::varchar[])';
+    execute sqlstr;
+    sqlstr := 'delete from ' || arcfullname || '
+      where _id = any(' || quote_literal(myrec1.arc_ids) || '::varchar[]) 
+    ';
+    execute sqlstr;
+  end loop;
+
+
   if linegeoname <> '_geo' then 
-    sqlstr := 'alter table ' || linefullname || ' rename _geo to ' || quote_ident(linegeoname) ;
+    sqlstr := 'alter table ' || linefullname || ' rename column _geo to ' || quote_ident(linegeoname) ;
     execute sqlstr;
   end if;
   if nodegeoname <> '_geo' then 
-    sqlstr := 'alter table ' || nodefullname || ' rename _geo to ' || quote_ident(nodegeoname) ;
+    sqlstr := 'alter table ' || nodefullname || ' rename column _geo to ' || quote_ident(nodegeoname) ;
     execute sqlstr;
   end if;
-
-  ret := sc_remove_repeated_arcs(schemaname,arctablename,'_geo');
+  if arcgeoname <> '_geo' then 
+    sqlstr := 'alter table ' || arcfullname || ' rename column _geo to ' || quote_ident(arcgeoname);
+    execute sqlstr;
+  end if;
 
   return arctablename;
 end;
