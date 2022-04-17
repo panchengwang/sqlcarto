@@ -99,4 +99,95 @@ $$
 language 'plpgsql';
 
 
+--  将几何实体有效化
+--    min_ratio
+--    有效化的几何实体如polygon会转换成multipolygon,小于一定比例的部分直接删除，此比例由min_ratio指定
+--  返回
+--    point --> point
+--    linestring --> linestring 
+--    polygon --> polygon 
+--    multipoint --> multipoint
+--    multilinestring --> multilinestring
+--    multipolygon --> multipolygon
+create or replace function st_make_geometry_valid(geo geometry, min_ratio float8) returns geometry as 
+$$
+declare
+  sqlstr text;
+  geosarr geometry[];
+  mygeo geometry;
+  total_area float8;
+  max_area float8;
+  max_geo geometry;
+  gtype varchar;
+  extracttype integer;
+  i integer;
+begin
+  gtype := st_geometrytype(geo);
+  if gtype = 'ST_Point' or gtype = 'ST_MultiPoint' then 
+    extracttype := 1;
+  elsif gtype = 'ST_LineString' or gtype = 'ST_MultiLineString' then 
+    extracttype := 2;
+  else 
+    extracttype := 3;
+  end if;
+  total_area := st_area(geo);
+  geosarr := null;
+  
+  mygeo := st_makevalid(geo);
+  if not st_iscollection(mygeo) then 
+    return mygeo;
+  end if;
 
+  total_area := st_area(mygeo);
+  max_area := 0;
+  max_geo := null;
+
+  if extracttype = 3 then
+    for i in 1..st_numgeometries(mygeo) loop
+      if st_geometrytype(st_geometryn(mygeo,i)) = 'ST_Polygon' or 
+        st_geometrytype(st_geometryn(mygeo,i)) = 'ST_MultiPolygon' then 
+        if st_area(st_geometryn(mygeo,i))/total_area >= min_ratio then 
+          geosarr := array_append(geosarr,st_geometryn(mygeo,i));
+        end if;
+        if st_area(st_geometryn(mygeo,i)) > max_area then
+          max_geo := st_geometryn(mygeo,i);
+          max_area := st_area(st_geometryn(mygeo,i));
+        end if;
+      end if;
+    end loop;
+  else 
+    return mygeo;
+  end if;
+
+  -- 目前仅仅处理polygon和multipolygon
+  -- 如果是polygon，进行makevalid之后会转换成多个polygon，
+  --  我们仅仅保留其中面积最大的那一个
+  if not st_iscollection(geo) and extracttype = 3 then 
+    return max_geo;
+  end if;
+  
+  return st_collectionextract(st_collect(geosarr),extracttype);
+  
+end;
+$$
+language 'plpgsql'; 
+
+
+
+create or replace function sc_get_geometry_column_srid(
+  schemaname varchar,
+  tablename varchar,
+  geoname varchar
+) returns integer as 
+$$
+  select 
+    srid 
+  from 
+    geometry_columns 
+  where 
+    f_table_schema =$1 
+    and 
+    f_table_name=$2 
+    and 
+    f_geometry_column=$3;
+$$ language 'sql';
