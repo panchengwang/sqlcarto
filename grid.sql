@@ -27,7 +27,9 @@ begin
     create table ' || fullname || '(
       _id bigint,
       _center geometry(POINT,' || srid || '),
-      _geo  geometry(POLYGON,' || srid || ') 
+      _geo  geometry(POLYGON,' || srid || '),
+      _row bigint default -1,
+      _col bigint default -1
     )';
   execute sqlstr;
 
@@ -38,10 +40,13 @@ begin
 
   sqlstr := '
     update ' || fullname || '
-    set _center=st_setsrid(st_makepoint(
-      ' || minx || '+(_id - _id/ ' || ncols || '*' ||  ncols ||' +0.5)*'  || xstep || ',
-      ' || miny ||  '+(_id / ' || ncols || ' + 0.5)*'|| ystep || '
-    ),' || srid || ')
+    set 
+      _center=st_setsrid(st_makepoint(
+        ' || minx || '+(_id - _id/ ' || ncols || '*' ||  ncols ||' +0.5)*'  || xstep || ',
+        ' || miny ||  '+(_id / ' || ncols || ' + 0.5)*'|| ystep || '
+      ),' || srid || ')    ,
+      _row = _id / ' || ncols || ',
+      _col = _id - _id / ' || ncols || '*' || ncols || '
   ';
   execute sqlstr;
 
@@ -125,7 +130,7 @@ begin
 end;
 $$ language 'plpgsql';
 
-select sc_create_grid('public','abc',3857,95.0,95.0,200.0,200.0,20.0,20.0);
+-- select sc_create_grid('public','abc',3857,95.0,95.0,200.0,200.0,20.0,20.0);
 -- drop table if exists grid_a;
 
 -- \timing
