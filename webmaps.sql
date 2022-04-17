@@ -31,6 +31,21 @@
 --       "output":"json"
 --     }'::json);
 
+-- 地理编码
+-- create or replace function sc_gaode_geocode(
+--   url varchar,
+--   params jsonb,
+--   key varchar,
+--   address varchar
+-- ) returns json as 
+-- $$
+-- declare
+--   sqlstr text;
+--   myurl text;
+-- begin
+-- end;
+-- $$ language 'plpgsql';
+
 -- 逆地理编码
 -- 得到高德的逆地理编码返回json，此json包含有aois、pois等信息
 create or replace function sc_gaode_reverse_geocode(
@@ -46,7 +61,7 @@ declare
   retjson json;
 begin
   myurl := url || '?output=json&location=' || st_x(location) || ',' || st_y(location) || '&key=' || key || '&radius=0&extensions=all';
-  select http_set_curlopt('CURLOPT_SSL_VERIFYPEER','0');
+  perform http_set_curlopt('CURLOPT_SSL_VERIFYPEER','0');
   select 
 		content::json into retjson
 	from 
@@ -94,13 +109,28 @@ begin
 end;
 $$ language 'plpgsql';
 
+
+
+
 -- 测试
-select sc_gaode_reverse_geocode_aois(
-  'https://restapi.amap.com/v3/geocode/regeo',
-  '{}'::json,
-  'f599fa220f499f97005e2cc7ef0d4846',
-  'SRID=4326;POINT(112.99110419681632 28.13963812157232)'::geometry
-);
+-- create table pois(
+--   id serial,
+--   loc geometry(POINT,4326),
+--   geom geometry(MULTIPOLYGON,4326)
+-- );
+-- insert into pois(loc) values
+--   ('SRID=4326;POINT(112.99110419681632 28.13963812157232)'::geometry),
+--   ('SRID=4326;POINT(112.988257 28.142603)'::geometry);
+
+-- select 
+--   sc_gaode_reverse_geocode_aois(
+--     'https://restapi.amap.com/v3/geocode/regeo',
+--     '{}'::json,
+--     'f599fa220f499f97005e2cc7ef0d4846',
+--     loc
+--   )::jsonb->0
+-- from 
+--   pois;
 
 -- curl "https://restapi.amap.com/v3/geocode/regeo?output=json&location=112.99110419681632,28.13963812157232&key=f599fa220f499f97005e2cc7ef0d4846&radius=10&extensions=all"
 

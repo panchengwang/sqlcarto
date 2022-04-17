@@ -4,12 +4,14 @@
 # we created libpostgis.so(linux) or libpostgis.a(Mac) to support sqlcarto extension.
 
 
-POSTGIS_SRC_PATH=~/software/sdb/postgis
+
 
 OS=`uname`
 
 CUR_DIR=$(cd `dirname $0`; pwd)
 mkdir $CUR_DIR/libs
+
+POSTGIS_SRC_PATH=$CUR_DIR/../../../../postgis
 
 # macos 
 if test ${OS} = 'Darwin' ; then
