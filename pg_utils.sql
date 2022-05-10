@@ -32,6 +32,21 @@ create or replace function sc_has_column(
 $$ language 'sql';
 
 
+create or replace function sc_get_column_definition(
+  schemaname varchar,
+  tablename varchar,
+  columnname varchar
+) returns boolean as $$
+  select 
+    column_name || ' ' || data_type 
+  from 
+    information_schema.columns 
+  where 
+    table_schema=$1 and 
+    table_name = $2 and 
+    column_name = $3;
+$$ language 'sql';
+
 -- 给表增加一个_id字段
 -- _id 字符串，长度32，uuid去掉中间的连接符
 -- 如果表中已经包含_id字段，则什么也不做
