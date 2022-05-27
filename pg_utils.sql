@@ -36,9 +36,9 @@ create or replace function sc_get_column_definition(
   schemaname varchar,
   tablename varchar,
   columnname varchar
-) returns boolean as $$
+) returns varchar as $$
   select 
-    column_name || ' ' || data_type 
+    data_type 
   from 
     information_schema.columns 
   where 
