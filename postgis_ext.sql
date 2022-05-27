@@ -191,3 +191,141 @@ $$
     and 
     f_geometry_column=$3;
 $$ language 'sql';
+
+
+
+
+
+-- 将多边形等转换成linestring
+-- 包括外环，内环信息
+create type PolygonDumpLineString as(
+  isOutRing boolean,
+  geom geometry
+);
+
+create or replace function sc_polygon_to_linestring(geo geometry) returns setof PolygonDumpLineString as 
+$$
+declare
+  sqlstr text;
+  i integer;
+  j integer;
+  mypg geometry;
+  myrec record;
+  geotype varchar;
+  dumpline PolygonDumpLineString;
+begin
+  geotype := st_geometrytype(geo);
+  if st_isempty(geo) then 
+    return;
+  end if;
+
+  if geotype = 'ST_LineString' then 
+    dumpline.isOutRing := false;
+    dumpline.geom := geo;
+    return next dumpline;
+  elsif geotype = 'ST_MultiLineString' then
+    for i in 1..st_numgeometries(geo) loop 
+      dumpline.isOutRing := false;
+      dumpline.geom := st_geometryn(geo,i);
+      return next dumpline;
+    end loop; 
+  elsif geotype = 'ST_Polygon' then 
+    dumpline.isOutRing := true;
+    dumpline.geom := ST_ExteriorRing(geo);
+    return next dumpline;
+    for i in 1..ST_NumInteriorRings(geo) loop 
+      dumpline.isOutRing := false;
+      dumpline.geom := ST_InteriorRingN(geo,i);
+      return next dumpline;
+    end loop;
+  elsif geotype = 'ST_MultiPolygon' then 
+    for j in 1..st_numgeometries(geo) loop
+      sqlstr := 'select dumpline from sc_polygon_to_linestring(' || quote_literal(st_geometryn(geo,j)::text) || ') as dumpline';
+      for myrec in execute sqlstr loop 
+        return next myrec.dumpline;
+      end loop;
+    end loop;
+  elsif geotype = 'ST_GeometryCollection' then 
+    for j in 1..st_numgeometries(geo) loop
+      sqlstr := 'select dumpline from sc_polygon_to_linestring(' || quote_literal(st_geometryn(geo,j)::text) || ') as dumpline';
+      for myrec in execute sqlstr loop 
+        return next myrec.dumpline;
+      end loop;
+    end loop;
+  elsif geotype <> 'ST_Polygon' 
+    and geotype <> 'ST_MultiPolygon'
+    and geotype <> 'ST_LineString'
+    and geotype <> 'ST_MultiLineString' then 
+    raise notice 'type: %, %', geotype,' Only LineString, MultiLineString,Polygon,MultiPolygon can be convert to LineString ';
+  end if;
+
+  return;
+end;
+$$
+language 'plpgsql';
+
+
+
+-- 将linestring导出成点，顺序不变，序号
+create type LineStringDumpPoint as(
+  id integer,
+  geom geometry
+);
+
+create or replace function sc_linestring_to_points(ls geometry) returns setof LineStringDumpPoint as 
+$$
+declare 
+  sqlstr text;
+  myrec record;
+  dumppoint LineStringDumpPoint;
+begin 
+  sqlstr := '
+    select 
+      B.idx as id,
+      st_pointn(' || quote_literal(ls::text) || '::geometry , B.idx) as geom
+    from 
+      (select * from generate_series(1,' || st_npoints(ls) || ')  as idx) B
+    order by B.idx;
+  ';
+  raise notice '%', sqlstr;
+  for myrec in execute sqlstr loop 
+    dumppoint.id = myrec.id;
+    dumppoint.geom = myrec.geom;
+    return next dumppoint;
+  end loop;
+  return ;
+end;
+$$ language 'plpgsql';
+
+
+-- 将polygon和multipolygon中的洞填上
+
+create or replace function sc_fill_hole(geo geometry) returns geometry as 
+$$
+declare
+  sqlstr text;
+  geotype varchar;
+  myrec record;
+  mygeo geometry;
+begin
+  geotype := st_geometrytype(geo);
+  if st_isempty(geo) then 
+    return geo;
+  end if;
+
+  if geotype = 'ST_Polygon' then 
+    return st_makepolygon(ST_ExteriorRing(geo));
+  end if;
+
+  if geotype = 'ST_MultiPolygon' then 
+    select st_union(sc_fill_hole(geom)) into mygeo from st_dump(geo);
+    return mygeo;
+  end if;
+  return geo;
+end;
+$$
+language 'plpgsql';
+
+
+-- st_makevalid在计算无效多边形的时候有bug，下面的函数提供一个更好的无效多边形有效化函数
+create or replace function sc_makevalid
