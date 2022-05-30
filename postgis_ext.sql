@@ -328,4 +328,42 @@ language 'plpgsql';
 
 
 -- st_makevalid在计算无效多边形的时候有bug，下面的函数提供一个更好的无效多边形有效化函数
-create or replace function sc_makevalid
+create or replace function sc_makevalid(geo geometry) returns geometry as 
+$$
+declare 
+  sqlstr text;
+  mpg geometry;
+begin
+  if st_geometrytype(geo) = 'ST_Polygon' then 
+    return sc_makevalid_polygon(geo);
+  end if;
+
+  if st_geometrytype(geo) = 'ST_MultiPolygon' then 
+    select st_multi(st_union(sc_makevalid_polygon(A.geom))) into mpg from st_dump(geo) A;
+    return mpg;
+  end if;
+  return st_makevalid(geo);
+end;
+$$ language 'plpgsql';
+
+create or replace function sc_makevalid_polygon(pg geometry) returns geometry as 
+$$
+declare
+  sqlstr text;
+  outer_pg geometry;
+  inner_pgs geometry;
+begin
+  if st_isvalid(pg) then 
+    return pg;
+  end if;
+  if ST_NumInteriorRings(pg) = 0 then
+    return st_makevalid(pg);
+  end if;
+  outer_pg := st_makevalid(st_makepolygon(ST_ExteriorRing(pg)));
+  select 
+    st_union(st_makevalid(st_makepolygon(ST_InteriorRingN(pg,idx)))) into inner_pgs
+  from 
+    generate_series(1,ST_NumInteriorRings(pg)) as idx;
+  return st_makevalid(st_difference(outer_pg, inner_pgs));
+end;
+$$ language 'plpgsql';
