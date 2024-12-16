@@ -4,14 +4,14 @@
 -- 地图符号中的线宽、点划线中的dash单位均为毫米 
 -- 地图符号的定位坐标则为归一化的数值， 如圆心坐标、圆半径等 
 -- 地图符号中的角度坐标为度，如弧的开始、结束角度，旋转角度 
-create table symbol_meta( 
+create table sc_symbols( 
     id varchar(32) default sc_uuid(),       -- 
     english varchar(32),                    -- 英文名 
     chinese varchar(32),                    -- 中文名 
     sym symbol not null                     -- 地图符号 
 ); 
 
-insert into symbol_meta(english, chinese, sym) values('0','0','
+insert into sc_symbols(english, chinese, sym) values('0','0','
 {
     "offset": {
         "x": 0,
@@ -77,7 +77,7 @@ insert into symbol_meta(english, chinese, sym) values('0','0','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('0','〇','
+insert into sc_symbols(english, chinese, sym) values('0','〇','
 {
     "offset": {
         "x": 0,
@@ -174,7 +174,7 @@ insert into symbol_meta(english, chinese, sym) values('0','〇','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('10','十','
+insert into sc_symbols(english, chinese, sym) values('10','十','
 {
     "offset": {
         "x": 0,
@@ -271,7 +271,7 @@ insert into symbol_meta(english, chinese, sym) values('10','十','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('1','1','
+insert into sc_symbols(english, chinese, sym) values('1','1','
 {
     "offset": {
         "x": 0,
@@ -337,7 +337,7 @@ insert into symbol_meta(english, chinese, sym) values('1','1','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('1','一','
+insert into sc_symbols(english, chinese, sym) values('1','一','
 {
     "offset": {
         "x": 0,
@@ -434,7 +434,7 @@ insert into symbol_meta(english, chinese, sym) values('1','一','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('2','2','
+insert into sc_symbols(english, chinese, sym) values('2','2','
 {
     "offset": {
         "x": 0,
@@ -500,7 +500,7 @@ insert into symbol_meta(english, chinese, sym) values('2','2','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('2','二','
+insert into sc_symbols(english, chinese, sym) values('2','二','
 {
     "offset": {
         "x": 0,
@@ -597,7 +597,7 @@ insert into symbol_meta(english, chinese, sym) values('2','二','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('3','3','
+insert into sc_symbols(english, chinese, sym) values('3','3','
 {
     "offset": {
         "x": 0,
@@ -663,7 +663,7 @@ insert into symbol_meta(english, chinese, sym) values('3','3','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('3','三','
+insert into sc_symbols(english, chinese, sym) values('3','三','
 {
     "offset": {
         "x": 0,
@@ -760,7 +760,7 @@ insert into symbol_meta(english, chinese, sym) values('3','三','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('4','4','
+insert into sc_symbols(english, chinese, sym) values('4','4','
 {
     "offset": {
         "x": 0,
@@ -826,7 +826,7 @@ insert into symbol_meta(english, chinese, sym) values('4','4','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('4','四','
+insert into sc_symbols(english, chinese, sym) values('4','四','
 {
     "offset": {
         "x": 0,
@@ -923,7 +923,7 @@ insert into symbol_meta(english, chinese, sym) values('4','四','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('5','5','
+insert into sc_symbols(english, chinese, sym) values('5','5','
 {
     "offset": {
         "x": 0,
@@ -989,7 +989,7 @@ insert into symbol_meta(english, chinese, sym) values('5','5','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('5','五','
+insert into sc_symbols(english, chinese, sym) values('5','五','
 {
     "offset": {
         "x": 0,
@@ -1086,7 +1086,7 @@ insert into symbol_meta(english, chinese, sym) values('5','五','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('6','6','
+insert into sc_symbols(english, chinese, sym) values('6','6','
 {
     "offset": {
         "x": 0,
@@ -1152,7 +1152,7 @@ insert into symbol_meta(english, chinese, sym) values('6','6','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('6','六','
+insert into sc_symbols(english, chinese, sym) values('6','六','
 {
     "offset": {
         "x": 0,
@@ -1249,7 +1249,7 @@ insert into symbol_meta(english, chinese, sym) values('6','六','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('7','7','
+insert into sc_symbols(english, chinese, sym) values('7','7','
 {
     "offset": {
         "x": 0,
@@ -1315,7 +1315,7 @@ insert into symbol_meta(english, chinese, sym) values('7','7','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('7','七','
+insert into sc_symbols(english, chinese, sym) values('7','七','
 {
     "offset": {
         "x": 0,
@@ -1412,7 +1412,7 @@ insert into symbol_meta(english, chinese, sym) values('7','七','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('8','8','
+insert into sc_symbols(english, chinese, sym) values('8','8','
 {
     "offset": {
         "x": 0,
@@ -1478,7 +1478,7 @@ insert into symbol_meta(english, chinese, sym) values('8','8','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('8','八','
+insert into sc_symbols(english, chinese, sym) values('8','八','
 {
     "offset": {
         "x": 0,
@@ -1575,7 +1575,7 @@ insert into symbol_meta(english, chinese, sym) values('8','八','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('9','9','
+insert into sc_symbols(english, chinese, sym) values('9','9','
 {
     "offset": {
         "x": 0,
@@ -1641,7 +1641,7 @@ insert into symbol_meta(english, chinese, sym) values('9','9','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('9','九','
+insert into sc_symbols(english, chinese, sym) values('9','九','
 {
     "offset": {
         "x": 0,
@@ -1738,7 +1738,7 @@ insert into symbol_meta(english, chinese, sym) values('9','九','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('arc3points','三点定弧','
+insert into sc_symbols(english, chinese, sym) values('arc3points','三点定弧','
 {
     "offset": {
         "x": 0,
@@ -1820,7 +1820,7 @@ insert into symbol_meta(english, chinese, sym) values('arc3points','三点定弧
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('arc','弧','
+insert into sc_symbols(english, chinese, sym) values('arc','弧','
 {
     "offset": {
         "x": 0,
@@ -1874,7 +1874,7 @@ insert into symbol_meta(english, chinese, sym) values('arc','弧','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('chord','弦','
+insert into sc_symbols(english, chinese, sym) values('chord','弦','
 {
     "offset": {
         "x": 0,
@@ -1929,7 +1929,7 @@ insert into symbol_meta(english, chinese, sym) values('chord','弦','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('circle','圆','
+insert into sc_symbols(english, chinese, sym) values('circle','圆','
 {
     "offset": {
         "x": 0,
@@ -1979,7 +1979,7 @@ insert into symbol_meta(english, chinese, sym) values('circle','圆','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('concentric circles','同心圆','
+insert into sc_symbols(english, chinese, sym) values('concentric circles','同心圆','
 {
     "offset": {
         "x": 0,
@@ -2038,7 +2038,7 @@ insert into symbol_meta(english, chinese, sym) values('concentric circles','同�
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('ellipse','椭圆','
+insert into sc_symbols(english, chinese, sym) values('ellipse','椭圆','
 {
     "offset": {
         "x": 0,
@@ -2090,7 +2090,7 @@ insert into symbol_meta(english, chinese, sym) values('ellipse','椭圆','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('linestring','折线','
+insert into sc_symbols(english, chinese, sym) values('linestring','折线','
 {
     "offset": {
         "x": 0.0,
@@ -2158,7 +2158,7 @@ insert into symbol_meta(english, chinese, sym) values('linestring','折线','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('pie','扇形','
+insert into sc_symbols(english, chinese, sym) values('pie','扇形','
 {
     "offset": {
         "x": 0,
@@ -2213,7 +2213,7 @@ insert into symbol_meta(english, chinese, sym) values('pie','扇形','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('polygon','多边形','
+insert into sc_symbols(english, chinese, sym) values('polygon','多边形','
 {
     "offset": {
         "x": 0,
@@ -2277,7 +2277,7 @@ insert into symbol_meta(english, chinese, sym) values('polygon','多边形','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('provincial capital','首府','
+insert into sc_symbols(english, chinese, sym) values('provincial capital','首府','
 {
     "offset": {
         "x": 0,
@@ -2370,7 +2370,7 @@ insert into symbol_meta(english, chinese, sym) values('provincial capital','首�
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('solid fill','实心填充','
+insert into sc_symbols(english, chinese, sym) values('solid fill','实心填充','
 {
     "offset": {
         "x": 0,
@@ -2393,7 +2393,7 @@ insert into symbol_meta(english, chinese, sym) values('solid fill','实心填充
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('solid line','实线','
+insert into sc_symbols(english, chinese, sym) values('solid line','实线','
 {
     "offset": {
         "x": 0,
@@ -2426,7 +2426,7 @@ insert into symbol_meta(english, chinese, sym) values('solid line','实线','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('square','正方形','
+insert into sc_symbols(english, chinese, sym) values('square','正方形','
 {
     "offset": {
         "x": 0,
@@ -2479,7 +2479,7 @@ insert into symbol_meta(english, chinese, sym) values('square','正方形','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('star','五角星','
+insert into sc_symbols(english, chinese, sym) values('star','五角星','
 {
     "offset": {
         "x": 0,
@@ -2533,7 +2533,7 @@ insert into symbol_meta(english, chinese, sym) values('star','五角星','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('triangle','三角形','
+insert into sc_symbols(english, chinese, sym) values('triangle','三角形','
 {
     "offset": {
         "x": 0,

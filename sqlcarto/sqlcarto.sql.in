@@ -142,6 +142,94 @@ $$
         sc_uuid();
 $$ language 'sql';
 
+-- sqlcarto administrate module
+
+drop table if exists sc_server_nodes;
+create table sc_server_nodes(
+    id varchar(32) not null,
+    max_user_count  integer not null default 200,          -- each node can afford service for no more than 200 users 
+    server_url varchar(1024),                              -- node service url for sqlcarto server
+    db_host varchar(16) not null,                          -- host or ip
+    db_storage_size float8 not null default 20000,         -- available space for database , unit: mega bytes
+    db_reserved_factor float8 not null default 0.2,        -- if db storage occupied than (db_storage_size * (1-db_reserved_factor)), no operation can be done in this node
+    last_operate_time timestamp default now() not null
+);
+
+
+-- 
+create or replace function sc_add_node( maxuser float8, serverurl varchar, 
+    dbhost varchar, dbmaxsize float8, dbreservfact float8) 
+returns varchar as 
+$$
+declare
+    nodeid varchar;
+begin
+    nodeid := sc_uuid();
+    insert into sc_server_nodes(id,max_user_count, server_url, db_host,db_storage_size,db_reserved_factor) 
+        values (nodeid,maxuser,serverurl, dbhost,dbmaxsize,dbreservfact);
+    return nodeid;
+end;
+$$ language 'plpgsql';
+
+
+drop table if exists sc_user_types;
+create table sc_user_types(
+    id integer not null unique,
+    type_name varchar(64)
+);
+insert into sc_user_types(id, type_name) values
+    (0, 'Adminstrator'),
+    (1, 'Normal user'),
+    (2, 'Guest');
+
+drop table if exists sc_users;
+create table sc_users(
+    id varchar(32) primary key default sc_uuid() not null,
+    user_name varchar(128) unique not null,
+    password varchar(128) not null,
+    user_type integer not null default 1,
+    salt varchar(6) not null,
+    verify_code varchar(6) default '',
+    verify_code_gen_time timestamp not null default now(),
+    verify_code_valid_time interval default '10 minutes',
+    token varchar(256) not null default '',
+    token_gen_time timestamp null default now(),
+    token_valid_time interval default '5 minutes',
+    db_size float not null default 20000,                           -- 
+    create_time timestamp default now()
+);
+
+create or replace function sc_create_user(username varchar, password varchar, usertype integer) returns varchar as 
+$$
+declare
+    id varchar;
+    sqlstr text;
+    salt varchar;
+begin
+    id := sc_uuid();
+    salt := sc_generate_code(6);
+    sqlstr := 'insert into sc_users(id,user_name,password,user_type,salt) values(' 
+        || quote_literal(id) || ','
+        || quote_literal(username) || ','
+        || quote_literal(md5(password || salt)) || ','
+        || usertype || ','
+        || quote_literal(salt)
+    || ')';
+    raise notice '%', sqlstr;
+    execute sqlstr;
+    return id;
+end;
+$$ language 'plpgsql';
+
+create or replace function sc_create_admin(username varchar, password varchar) returns varchar as 
+$$
+    select sc_create_user($1,$2,0);
+$$ language 'sql';
+
+select sc_create_admin('pcwang','123456');
+
+
+
 -- Send mail module
 
 -- Function     :  sc_send_mail
@@ -306,14 +394,14 @@ CREATE OR REPLACE FUNCTION sc_symbol_as_image(symbol,text,float8,float8)
 -- 地图符号中的线宽、点划线中的dash单位均为毫米 
 -- 地图符号的定位坐标则为归一化的数值， 如圆心坐标、圆半径等 
 -- 地图符号中的角度坐标为度，如弧的开始、结束角度，旋转角度 
-create table symbol_meta( 
+create table sc_symbols( 
     id varchar(32) default sc_uuid(),       -- 
     english varchar(32),                    -- 英文名 
     chinese varchar(32),                    -- 中文名 
     sym symbol not null                     -- 地图符号 
 ); 
 
-insert into symbol_meta(english, chinese, sym) values('0','0','
+insert into sc_symbols(english, chinese, sym) values('0','0','
 {
     "offset": {
         "x": 0,
@@ -379,7 +467,7 @@ insert into symbol_meta(english, chinese, sym) values('0','0','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('0','〇','
+insert into sc_symbols(english, chinese, sym) values('0','〇','
 {
     "offset": {
         "x": 0,
@@ -476,7 +564,7 @@ insert into symbol_meta(english, chinese, sym) values('0','〇','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('10','十','
+insert into sc_symbols(english, chinese, sym) values('10','十','
 {
     "offset": {
         "x": 0,
@@ -573,7 +661,7 @@ insert into symbol_meta(english, chinese, sym) values('10','十','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('1','1','
+insert into sc_symbols(english, chinese, sym) values('1','1','
 {
     "offset": {
         "x": 0,
@@ -639,7 +727,7 @@ insert into symbol_meta(english, chinese, sym) values('1','1','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('1','一','
+insert into sc_symbols(english, chinese, sym) values('1','一','
 {
     "offset": {
         "x": 0,
@@ -736,7 +824,7 @@ insert into symbol_meta(english, chinese, sym) values('1','一','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('2','2','
+insert into sc_symbols(english, chinese, sym) values('2','2','
 {
     "offset": {
         "x": 0,
@@ -802,7 +890,7 @@ insert into symbol_meta(english, chinese, sym) values('2','2','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('2','二','
+insert into sc_symbols(english, chinese, sym) values('2','二','
 {
     "offset": {
         "x": 0,
@@ -899,7 +987,7 @@ insert into symbol_meta(english, chinese, sym) values('2','二','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('3','3','
+insert into sc_symbols(english, chinese, sym) values('3','3','
 {
     "offset": {
         "x": 0,
@@ -965,7 +1053,7 @@ insert into symbol_meta(english, chinese, sym) values('3','3','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('3','三','
+insert into sc_symbols(english, chinese, sym) values('3','三','
 {
     "offset": {
         "x": 0,
@@ -1062,7 +1150,7 @@ insert into symbol_meta(english, chinese, sym) values('3','三','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('4','4','
+insert into sc_symbols(english, chinese, sym) values('4','4','
 {
     "offset": {
         "x": 0,
@@ -1128,7 +1216,7 @@ insert into symbol_meta(english, chinese, sym) values('4','4','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('4','四','
+insert into sc_symbols(english, chinese, sym) values('4','四','
 {
     "offset": {
         "x": 0,
@@ -1225,7 +1313,7 @@ insert into symbol_meta(english, chinese, sym) values('4','四','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('5','5','
+insert into sc_symbols(english, chinese, sym) values('5','5','
 {
     "offset": {
         "x": 0,
@@ -1291,7 +1379,7 @@ insert into symbol_meta(english, chinese, sym) values('5','5','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('5','五','
+insert into sc_symbols(english, chinese, sym) values('5','五','
 {
     "offset": {
         "x": 0,
@@ -1388,7 +1476,7 @@ insert into symbol_meta(english, chinese, sym) values('5','五','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('6','6','
+insert into sc_symbols(english, chinese, sym) values('6','6','
 {
     "offset": {
         "x": 0,
@@ -1454,7 +1542,7 @@ insert into symbol_meta(english, chinese, sym) values('6','6','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('6','六','
+insert into sc_symbols(english, chinese, sym) values('6','六','
 {
     "offset": {
         "x": 0,
@@ -1551,7 +1639,7 @@ insert into symbol_meta(english, chinese, sym) values('6','六','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('7','7','
+insert into sc_symbols(english, chinese, sym) values('7','7','
 {
     "offset": {
         "x": 0,
@@ -1617,7 +1705,7 @@ insert into symbol_meta(english, chinese, sym) values('7','7','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('7','七','
+insert into sc_symbols(english, chinese, sym) values('7','七','
 {
     "offset": {
         "x": 0,
@@ -1714,7 +1802,7 @@ insert into symbol_meta(english, chinese, sym) values('7','七','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('8','8','
+insert into sc_symbols(english, chinese, sym) values('8','8','
 {
     "offset": {
         "x": 0,
@@ -1780,7 +1868,7 @@ insert into symbol_meta(english, chinese, sym) values('8','8','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('8','八','
+insert into sc_symbols(english, chinese, sym) values('8','八','
 {
     "offset": {
         "x": 0,
@@ -1877,7 +1965,7 @@ insert into symbol_meta(english, chinese, sym) values('8','八','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('9','9','
+insert into sc_symbols(english, chinese, sym) values('9','9','
 {
     "offset": {
         "x": 0,
@@ -1943,7 +2031,7 @@ insert into symbol_meta(english, chinese, sym) values('9','9','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('9','九','
+insert into sc_symbols(english, chinese, sym) values('9','九','
 {
     "offset": {
         "x": 0,
@@ -2040,7 +2128,7 @@ insert into symbol_meta(english, chinese, sym) values('9','九','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('arc3points','三点定弧','
+insert into sc_symbols(english, chinese, sym) values('arc3points','三点定弧','
 {
     "offset": {
         "x": 0,
@@ -2122,7 +2210,7 @@ insert into symbol_meta(english, chinese, sym) values('arc3points','三点定弧
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('arc','弧','
+insert into sc_symbols(english, chinese, sym) values('arc','弧','
 {
     "offset": {
         "x": 0,
@@ -2176,7 +2264,7 @@ insert into symbol_meta(english, chinese, sym) values('arc','弧','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('chord','弦','
+insert into sc_symbols(english, chinese, sym) values('chord','弦','
 {
     "offset": {
         "x": 0,
@@ -2231,7 +2319,7 @@ insert into symbol_meta(english, chinese, sym) values('chord','弦','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('circle','圆','
+insert into sc_symbols(english, chinese, sym) values('circle','圆','
 {
     "offset": {
         "x": 0,
@@ -2281,7 +2369,7 @@ insert into symbol_meta(english, chinese, sym) values('circle','圆','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('concentric circles','同心圆','
+insert into sc_symbols(english, chinese, sym) values('concentric circles','同心圆','
 {
     "offset": {
         "x": 0,
@@ -2340,7 +2428,7 @@ insert into symbol_meta(english, chinese, sym) values('concentric circles','同�
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('ellipse','椭圆','
+insert into sc_symbols(english, chinese, sym) values('ellipse','椭圆','
 {
     "offset": {
         "x": 0,
@@ -2392,7 +2480,7 @@ insert into symbol_meta(english, chinese, sym) values('ellipse','椭圆','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('linestring','折线','
+insert into sc_symbols(english, chinese, sym) values('linestring','折线','
 {
     "offset": {
         "x": 0.0,
@@ -2460,7 +2548,7 @@ insert into symbol_meta(english, chinese, sym) values('linestring','折线','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('pie','扇形','
+insert into sc_symbols(english, chinese, sym) values('pie','扇形','
 {
     "offset": {
         "x": 0,
@@ -2515,7 +2603,7 @@ insert into symbol_meta(english, chinese, sym) values('pie','扇形','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('polygon','多边形','
+insert into sc_symbols(english, chinese, sym) values('polygon','多边形','
 {
     "offset": {
         "x": 0,
@@ -2579,7 +2667,7 @@ insert into symbol_meta(english, chinese, sym) values('polygon','多边形','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('provincial capital','首府','
+insert into sc_symbols(english, chinese, sym) values('provincial capital','首府','
 {
     "offset": {
         "x": 0,
@@ -2672,7 +2760,7 @@ insert into symbol_meta(english, chinese, sym) values('provincial capital','首�
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('solid fill','实心填充','
+insert into sc_symbols(english, chinese, sym) values('solid fill','实心填充','
 {
     "offset": {
         "x": 0,
@@ -2695,7 +2783,7 @@ insert into symbol_meta(english, chinese, sym) values('solid fill','实心填充
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('solid line','实线','
+insert into sc_symbols(english, chinese, sym) values('solid line','实线','
 {
     "offset": {
         "x": 0,
@@ -2728,7 +2816,7 @@ insert into symbol_meta(english, chinese, sym) values('solid line','实线','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('square','正方形','
+insert into sc_symbols(english, chinese, sym) values('square','正方形','
 {
     "offset": {
         "x": 0,
@@ -2781,7 +2869,7 @@ insert into symbol_meta(english, chinese, sym) values('square','正方形','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('star','五角星','
+insert into sc_symbols(english, chinese, sym) values('star','五角星','
 {
     "offset": {
         "x": 0,
@@ -2835,7 +2923,7 @@ insert into symbol_meta(english, chinese, sym) values('star','五角星','
     ]
 }');
 
-insert into symbol_meta(english, chinese, sym) values('triangle','三角形','
+insert into sc_symbols(english, chinese, sym) values('triangle','三角形','
 {
     "offset": {
         "x": 0,
@@ -2888,3 +2976,71 @@ insert into symbol_meta(english, chinese, sym) values('triangle','三角形','
     ]
 }');
 
+--
+
+create table sc_services(
+    id varchar(32) default sc_uuid() not null,
+    request_type varchar unique not null,
+    function_name varchar unique not null
+    --,need_privilege_check boolean not null default true
+);
+
+--
+--  request:
+--      {
+--          "type": "<request_type>",
+--          "data": {
+--              
+--          }
+--      }
+create or replace function sc_service_run(request jsonb) returns jsonb as 
+$$
+declare
+    typestr varchar;
+    funcname varchar;
+    sqlstr text;
+    myrec record;
+    response jsonb;
+begin
+    typestr := request->>'type';
+    select function_name into funcname from sc_services where request_type = request->>'type';
+    sqlstr := 'select ' || funcname || '(' || quote_literal(request::text) || '::jsonb)';
+    execute sqlstr into response; 
+    return response;
+end;
+$$ language 'plpgsql';
+
+
+
+--      {
+--          "type": "USER_GET_VERIFY_CODE",
+--          "data": {
+--              "username": "wang_wang_lao@163.com"
+--          }
+--      }
+insert into sc_services(request_type, function_name) values('USER_GET_VERIFY_CODE','sc_user_get_verify_code');
+create or replace function sc_user_get_verify_code(request jsonb) returns jsonb as 
+$$
+declare
+    code varchar;
+begin
+    
+    return '{"a":1}'::jsonb;
+end;
+$$ language 'plpgsql';
+
+select sc_service_run(
+    '{
+         "type": "USER_GET_VERIFY_CODE",
+         "data": {
+             "username": "wang_wang_lao@163.com"
+         }
+     }'::jsonb
+);
+
+-- create or replace function sc_user_create(request jsonb) returns jsonb as 
+-- $$
+-- declare
+-- begin
+-- end;
+-- $$ language 'plpgsql';

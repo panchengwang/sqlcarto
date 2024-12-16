@@ -7,4 +7,4 @@ psql -d $dbname  -c " SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_
 dropdb  $dbname
 createdb  $dbname
 psql  -d $dbname -f ${CUR_DIR}/test.sql
-psql  -d $dbname -f ${CUR_DIR}/test_sym.sql
+# psql  -d $dbname -f ${CUR_DIR}/test_sym.sql

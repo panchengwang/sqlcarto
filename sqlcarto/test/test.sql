@@ -3,6 +3,10 @@ create extension postgis;
 create extension postgis_sfcgal;
 create extension postgis_sqlcarto;
 
+
+
+
+
 -- SET client_encoding to 'utf8';
 -- select sqlcarto_info();
 -- select sqlcarto_version();

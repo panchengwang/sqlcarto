@@ -96,3 +96,5 @@ bash install.sh
 ```
 
 
+## 添加节点
+
