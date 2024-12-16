@@ -1,0 +1,80 @@
+{
+    "offset": {
+        "x": 0,
+        "y": 0
+    },
+    "size": 5,
+    "shapes": [
+        {
+            "type": "path",
+            "stroke": {
+                "color": {
+                    "alpha": 255,
+                    "red": 127,
+                    "green": 127,
+                    "blue": 127
+                },
+                "width": 0.3,
+                "dashoffset": 0,
+                "dashes": [
+                    1.0,
+                    0
+                ],
+                "cap": "butt",
+                "join": "miter",
+                "miter": 10.0
+            },
+            "fill": {
+                "type": "solid",
+                "color": {
+                    "alpha": 255,
+                    "red": 255,
+                    "green": 255,
+                    "blue": 127
+                }
+            },
+            "subpaths": [
+                {
+                    "type": "arc3points",
+                    "offset": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "rotate": 0,
+                    "begin": {
+                        "x": -0.8,
+                        "y": 0
+                    },
+                    "middle": {
+                        "x": 0,
+                        "y": 0.8
+                    },
+                    "end": {
+                        "x": 0.8,
+                        "y": 0
+                    }
+                },
+                {
+                    "type": "arc3points",
+                    "offset": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "rotate": 0,
+                    "begin": {
+                        "x": -0.8,
+                        "y": 0
+                    },
+                    "middle": {
+                        "x": 0,
+                        "y": 0.2
+                    },
+                    "end": {
+                        "x": 0.8,
+                        "y": 0
+                    }
+                }
+            ]
+        }
+    ]
+}

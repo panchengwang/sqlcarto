@@ -1,0 +1,66 @@
+{
+    "offset": {
+        "x": 0.0,
+        "y": 0
+    },
+    "size": 5,
+    "shapes": [
+        {
+            "type": "path",
+            "stroke": {
+                "color": {
+                    "alpha": 255,
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "width": 0.2,
+                "dashoffset": 0,
+                "dashes": [
+                    1.0,
+                    0
+                ],
+                "cap": "round",
+                "join": "round",
+                "miter": 10.0
+            },
+            "fill": {
+                "type": "solid",
+                "color": {
+                    "alpha": 0,
+                    "red": 255,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "subpaths": [
+                {
+                    "type": "linestring",
+                    "points": [
+                        {
+                            "x": -0.7,
+                            "y": 0.35
+                        },
+                        {
+                            "x": -0.35,
+                            "y": -0.35
+                        },
+                        {
+                            "x": 0,
+                            "y": 0.35
+                        },
+                        {
+                            "x": 0.35,
+                            "y": -0.35
+                        },
+                        {
+                            "x": 0.7,
+                            "y": 0.35
+                        }
+                    ]
+                }
+            ],
+            "closed": true
+        }
+    ]
+}

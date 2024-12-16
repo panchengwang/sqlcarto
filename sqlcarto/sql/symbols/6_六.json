@@ -1,0 +1,95 @@
+{
+    "offset": {
+        "x": 0,
+        "y": 0
+    },
+    "size": 5,
+    "shapes": [
+        {
+            "type": "path",
+            "stroke": {
+                "color": {
+                    "alpha": 255,
+                    "red": 0,
+                    "green": 0,
+                    "blue": 255
+                },
+                "width": 0.2,
+                "dashoffset": 0,
+                "dashes": [
+                    1.0,
+                    0
+                ],
+                "cap": "butt",
+                "join": "miter",
+                "miter": 10.0
+            },
+            "fill": {
+                "type": "solid",
+                "color": {
+                    "alpha": 127,
+                    "red": 255,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "subpaths": [
+                {
+                    "type": "circle",
+                    "center": {
+                        "x": -0,
+                        "y": -0
+                    },
+                    "radius": 0.8
+                }
+            ]
+        },
+        {
+            "type": "path",
+            "stroke": {
+                "color": {
+                    "alpha": 255,
+                    "red": 255,
+                    "green": 255,
+                    "blue": 255
+                },
+                "width": 0.2,
+                "dashoffset": 0,
+                "dashes": [
+                    1.0,
+                    0
+                ],
+                "cap": "butt",
+                "join": "miter",
+                "miter": 10.0
+            },
+            "fill": {
+                "type": "solid",
+                "color": {
+                    "alpha": 255,
+                    "red": 255,
+                    "green": 255,
+                    "blue": 255
+                }
+            },
+            "subpaths": [
+                {
+                    "type": "text",
+                    "text": "六",
+                    "fontfamily": "Noto Sans SC",
+                    "fontsize": 0.6,
+                    "anchor": {
+                        "x": 0.0,
+                        "y": 0
+                    },
+                    "weight": "bold",
+                    "slant": "normal",
+                    "horizontalalign": "center",
+                    "verticalalign": "middle",
+                    "rotate": 0,
+                    "ispath": false
+                }
+            ]
+        }
+    ]
+}

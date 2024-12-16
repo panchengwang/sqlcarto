@@ -1,0 +1,91 @@
+{
+    "offset": {
+        "x": 0,
+        "y": 0
+    },
+    "size": 5,
+    "shapes": [
+        {
+            "type": "path",
+            "stroke": {
+                "color": {
+                    "alpha": 255,
+                    "red": 255,
+                    "green": 0,
+                    "blue": 0
+                },
+                "width": 1,
+                "dashoffset": 0,
+                "dashes": [
+                    1.0,
+                    0
+                ],
+                "cap": "butt",
+                "join": "miter",
+                "miter": 10.0
+            },
+            "fill": {
+                "type": "solid",
+                "color": {
+                    "alpha": 0,
+                    "red": 255,
+                    "green": 255,
+                    "blue": 255
+                }
+            },
+            "subpaths": [
+                {
+                    "type": "circle",
+                    "center": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "radius": 0.8
+                }
+            ]
+        },
+        {
+            "type": "path",
+            "stroke": {
+                "color": {
+                    "alpha": 255,
+                    "red": 255,
+                    "green": 0,
+                    "blue": 0
+                },
+                "width": 0.2,
+                "dashoffset": 0,
+                "dashes": [
+                    1.0,
+                    0
+                ],
+                "cap": "butt",
+                "join": "miter",
+                "miter": 10.0
+            },
+            "fill": {
+                "type": "solid",
+                "color": {
+                    "alpha": 255,
+                    "red": 255,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "subpaths": [
+                {
+                    "type": "star",
+                    "center": {
+                        "x": -0,
+                        "y": -0
+                    },
+                    "outerradius": 0.8,
+                    "innerradius": 0.32,
+                    "rotate": 0,
+                    "numedges": 5
+                }
+            ],
+            "closed": true
+        }
+    ]
+}

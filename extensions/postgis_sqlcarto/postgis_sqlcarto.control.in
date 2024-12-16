@@ -1,0 +1,5 @@
+# postgis sqlcarto extension
+comment = 'SQLCarto Extension'
+default_version = '@EXTVERSION@'
+relocatable = true
+requires = postgis

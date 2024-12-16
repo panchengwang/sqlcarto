@@ -1,0 +1,52 @@
+{
+    "offset": {
+        "x": 0,
+        "y": 0
+    },
+    "size": 5,
+    "shapes": [
+        {
+            "type": "path",
+            "stroke": {
+                "color": {
+                    "alpha": 255,
+                    "red": 255,
+                    "green": 0,
+                    "blue": 0
+                },
+                "width": 0.2,
+                "dashoffset": 0,
+                "dashes": [
+                    1.0,
+                    0
+                ],
+                "cap": "butt",
+                "join": "miter",
+                "miter": 10.0
+            },
+            "fill": {
+                "type": "solid",
+                "color": {
+                    "alpha": 255,
+                    "red": 255,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "subpaths": [
+                {
+                    "type": "star",
+                    "center": {
+                        "x": -0,
+                        "y": -0
+                    },
+                    "outerradius": 0.79,
+                    "innerradius": 0.3,
+                    "rotate": 0,
+                    "numedges": 5
+                }
+            ],
+            "closed": true
+        }
+    ]
+}

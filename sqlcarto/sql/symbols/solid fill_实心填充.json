@@ -1,0 +1,21 @@
+{
+    "offset": {
+        "x": 0,
+        "y": 0
+    },
+    "size": 5,
+    "shapes": [
+        {
+            "type": "systemfill",
+            "fill": {
+                "type": "solid",
+                "color": {
+                    "alpha": 255,
+                    "red": 255,
+                    "green": 0,
+                    "blue": 0
+                }
+            }
+        }
+    ]
+}
