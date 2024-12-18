@@ -45,24 +45,35 @@ create or replace function sc_user_get_verify_code(request jsonb) returns jsonb 
 $$
 declare
     code varchar;
+    ok boolean;
 begin
+    code := sc_generate_code(8);
+    if not sc_user_exist(request->'data'->>'username') then 
+        perform sc_user_create(request->'data'->>'username', '',1);
+    end if;
+    update sc_users set verify_code = code where username = (request->'data'->>'username');
+    ok := sc_send_mail( request->'data'->>'username', 'verify code', code ) ;
+    if ok then 
+        return jsonb_build_object(
+            'success', ok,
+            'message', 'Verify code has been sent to ' || (request->'data'->>'username')
+        );  
+    end if;
+
+    return jsonb_build_object(
+        'success', ok,
+        'message', 'Failed to send verify code'
+    );
     
-    return '{"a":1}'::jsonb;
 end;
 $$ language 'plpgsql';
 
-select sc_service_run(
-    '{
-         "type": "USER_GET_VERIFY_CODE",
-         "data": {
-             "username": "wang_wang_lao@163.com"
-         }
-     }'::jsonb
-);
+-- select sc_service_run(
+--     '{
+--          "type": "USER_GET_VERIFY_CODE",
+--          "data": {
+--              "username": "wang_wang_lao@163.com"
+--          }
+--      }'::jsonb
+-- );
 
--- create or replace function sc_user_create(request jsonb) returns jsonb as 
--- $$
--- declare
--- begin
--- end;
--- $$ language 'plpgsql';
