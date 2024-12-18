@@ -51,11 +51,19 @@ create table sc_users(
     token varchar(256) not null default '',
     token_gen_time timestamp null default now(),
     token_valid_time interval default '5 minutes',
+    activated boolean default false not null,
     db_size float not null default 20000,                           -- 
     create_time timestamp default now()
 );
 
-create or replace function sc_create_user(username varchar, password varchar, usertype integer) returns varchar as 
+
+create or replace function sc_user_exist(username varchar) returns boolean as 
+$$
+    select count(1) = 1 from sc_users where username = $1;
+$$ language 'sql';
+
+
+create or replace function sc_user_create(username varchar, password varchar, usertype integer) returns varchar as 
 $$
 declare
     id varchar;
@@ -77,12 +85,23 @@ begin
 end;
 $$ language 'plpgsql';
 
-create or replace function sc_create_admin(username varchar, password varchar) returns varchar as 
+create or replace function sc_user_set_activate_by_id(userid varchar, isactivated boolean) returns varchar as 
 $$
-    select sc_create_user($1,$2,0);
+    update sc_users set activated = $2 where id = $1;
+    select $1;
 $$ language 'sql';
 
-select sc_create_admin('pcwang','123456');
+create or replace function sc_user_create_admin(username varchar, password varchar) returns varchar as 
+$$
+    select sc_user_set_activate_by_id(sc_user_create($1,$2,0),true);
+$$ language 'sql';
+
+
+
+
+select sc_user_create_admin('pcwang','123456');
+
+
 
 
 
