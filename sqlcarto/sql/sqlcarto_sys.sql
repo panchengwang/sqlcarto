@@ -65,10 +65,19 @@ create table sc_configuration(
 );
 insert into sc_configuration(key_name,key_value, description)
 values
-    ('EMAIL_USER','','email of sender'),
-    ('EMAIL_PASSWORD','','email password'),
-    ('EMAIL_SMTP','','smtp server');
-
+    ('EMAIL_USER','sqlcartotest@126.com','email of sender'),
+    ('EMAIL_PASSWORD','SCUGOXHGWAEZUEQH','email password'),
+    ('EMAIL_SMTP','smtps://smtp.126.com:465','smtp server');
+-- values
+--     ('EMAIL_USER','','email of sender'),
+--     ('EMAIL_PASSWORD','','email password'),
+--     ('EMAIL_SMTP','','smtp server');
+--     'sqlcartotest@126.com',
+--     'sqlcartotest@126.com',
+--     '测试一下',
+--     '这是一个从postgresql sqlcarto扩展发送过来的测试邮件',
+--     'smtps://smtp.126.com:465',
+--     'SCUGOXHGWAEZUEQH'
 
 
 
