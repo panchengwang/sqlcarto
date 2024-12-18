@@ -65,10 +65,19 @@ create table sc_configuration(
 );
 insert into sc_configuration(key_name,key_value, description)
 values
-    ('EMAIL_USER','','email of sender'),
-    ('EMAIL_PASSWORD','','email password'),
-    ('EMAIL_SMTP','','smtp server');
-
+    ('EMAIL_USER','sqlcartotest@126.com','email of sender'),
+    ('EMAIL_PASSWORD','SCUGOXHGWAEZUEQH','email password'),
+    ('EMAIL_SMTP','smtps://smtp.126.com:465','smtp server');
+-- values
+--     ('EMAIL_USER','','email of sender'),
+--     ('EMAIL_PASSWORD','','email password'),
+--     ('EMAIL_SMTP','','smtp server');
+--     'sqlcartotest@126.com',
+--     'sqlcartotest@126.com',
+--     '测试一下',
+--     '这是一个从postgresql sqlcarto扩展发送过来的测试邮件',
+--     'smtps://smtp.126.com:465',
+--     'SCUGOXHGWAEZUEQH'
 
 
 
@@ -195,11 +204,12 @@ create table sc_users(
     token varchar(256) not null default '',
     token_gen_time timestamp null default now(),
     token_valid_time interval default '5 minutes',
+    activated boolean default false not null,
     db_size float not null default 20000,                           -- 
     create_time timestamp default now()
 );
 
-create or replace function sc_create_user(username varchar, password varchar, usertype integer) returns varchar as 
+create or replace function sc_user_create(username varchar, password varchar, usertype integer) returns varchar as 
 $$
 declare
     id varchar;
@@ -221,12 +231,18 @@ begin
 end;
 $$ language 'plpgsql';
 
-create or replace function sc_create_admin(username varchar, password varchar) returns varchar as 
+create or replace function sc_user_set_activate_by_id(userid varchar, isactivated boolean) returns varchar as 
 $$
-    select sc_create_user($1,$2,0);
+    update sc_users set activated = $2 where id = $1;
+    select $1;
 $$ language 'sql';
 
-select sc_create_admin('pcwang','123456');
+create or replace function sc_user_create_admin(username varchar, password varchar) returns varchar as 
+$$
+    select sc_user_set_activate_by_id(sc_user_create($1,$2,0),true);
+$$ language 'sql';
+
+select sc_user_create_admin('pcwang','123456');
 
 
 
@@ -3023,9 +3039,22 @@ create or replace function sc_user_get_verify_code(request jsonb) returns jsonb 
 $$
 declare
     code varchar;
+    ok boolean;
 begin
+    code := sc_generate_code(8);
+    ok := sc_send_mail( request->'data'->>'username', 'verify code', code ) ;
+    if ok then 
+        return jsonb_build_object(
+            'success', ok,
+            'message', 'Verify code has been sent to ' || (request->'data'->>'username')
+        );  
+    end if;
+
+    return jsonb_build_object(
+        'success', ok,
+        'message', 'Failed to send verify code'
+    );
     
-    return '{"a":1}'::jsonb;
 end;
 $$ language 'plpgsql';
 
