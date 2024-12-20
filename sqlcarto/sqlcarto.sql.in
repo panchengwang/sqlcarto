@@ -209,6 +209,13 @@ create table sc_users(
     create_time timestamp default now()
 );
 
+
+create or replace function sc_user_exist(username varchar) returns boolean as 
+$$
+    select count(1) = 1 from sc_users where username = $1;
+$$ language 'sql';
+
+
 create or replace function sc_user_create(username varchar, password varchar, usertype integer) returns varchar as 
 $$
 declare
@@ -242,7 +249,12 @@ $$
     select sc_user_set_activate_by_id(sc_user_create($1,$2,0),true);
 $$ language 'sql';
 
+
+
+
 select sc_user_create_admin('pcwang','123456');
+
+
 
 
 
@@ -3041,7 +3053,11 @@ declare
     code varchar;
     ok boolean;
 begin
-    code := sc_generate_code(8);
+    code := sc_generate_code(6);
+    if not sc_user_exist(request->'data'->>'username') then 
+        perform sc_user_create(request->'data'->>'username', '',1);
+    end if;
+    update sc_users set verify_code = code where user_name = (request->'data'->>'username');
     ok := sc_send_mail( request->'data'->>'username', 'verify code', code ) ;
     if ok then 
         return jsonb_build_object(
@@ -3058,18 +3074,12 @@ begin
 end;
 $$ language 'plpgsql';
 
-select sc_service_run(
-    '{
-         "type": "USER_GET_VERIFY_CODE",
-         "data": {
-             "username": "wang_wang_lao@163.com"
-         }
-     }'::jsonb
-);
+-- select sc_service_run(
+--     '{
+--          "type": "USER_GET_VERIFY_CODE",
+--          "data": {
+--              "username": "wang_wang_lao@163.com"
+--          }
+--      }'::jsonb
+-- );
 
--- create or replace function sc_user_create(request jsonb) returns jsonb as 
--- $$
--- declare
--- begin
--- end;
--- $$ language 'plpgsql';
