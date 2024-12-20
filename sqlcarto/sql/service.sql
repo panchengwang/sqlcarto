@@ -47,11 +47,11 @@ declare
     code varchar;
     ok boolean;
 begin
-    code := sc_generate_code(8);
+    code := sc_generate_code(6);
     if not sc_user_exist(request->'data'->>'username') then 
         perform sc_user_create(request->'data'->>'username', '',1);
     end if;
-    update sc_users set verify_code = code where username = (request->'data'->>'username');
+    update sc_users set verify_code = code where user_name = (request->'data'->>'username');
     ok := sc_send_mail( request->'data'->>'username', 'verify code', code ) ;
     if ok then 
         return jsonb_build_object(
