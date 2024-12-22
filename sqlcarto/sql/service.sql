@@ -33,6 +33,17 @@ end;
 $$ language 'plpgsql';
 
 
+create or replace function sc_verify_code_is_expired(username varchar) returns boolean as 
+$$
+    select 
+        (verify_code_gen_time + verify_code_valid_time < now()) 
+    from 
+        sc_users 
+    where 
+        user_name = $1
+$$ language 'sql';
+
+
 
 --      {
 --          "type": "USER_GET_VERIFY_CODE",
@@ -51,7 +62,22 @@ begin
     if not sc_user_exist(request->'data'->>'username') then 
         perform sc_user_create(request->'data'->>'username', '',1);
     end if;
-    update sc_users set verify_code = code where user_name = (request->'data'->>'username');
+
+    if not sc_verify_code_is_expired(request->'data'->>'username') then 
+        select verify_code into code from sc_users where user_name = (request->'data'->>'username');
+        return jsonb_build_object(
+            'success', true,
+            'message', 'Verify code has been sent to ' || (request->'data'->>'username')
+        );
+    end if;
+
+    update sc_users 
+    set 
+        verify_code = code,
+        verify_code_gen_time = now()
+    where 
+        user_name = (request->'data'->>'username');
+
     ok := sc_send_mail( request->'data'->>'username', 'verify code', code ) ;
     if ok then 
         return jsonb_build_object(
