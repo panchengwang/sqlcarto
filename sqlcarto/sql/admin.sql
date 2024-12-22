@@ -46,7 +46,7 @@ create table sc_users(
     user_type integer not null default 1,
     salt varchar(6) not null,
     verify_code varchar(6) default '',
-    verify_code_gen_time timestamp not null default now(),
+    verify_code_gen_time timestamp not null default '1970-01-01'::timestamp,
     verify_code_valid_time interval default '10 minutes',
     token varchar(256) not null default '',
     token_gen_time timestamp null default now(),
@@ -59,7 +59,7 @@ create table sc_users(
 
 create or replace function sc_user_exist(username varchar) returns boolean as 
 $$
-    select count(1) = 1 from sc_users where username = $1;
+    select count(1) = 1 from sc_users where user_name = $1;
 $$ language 'sql';
 
 
