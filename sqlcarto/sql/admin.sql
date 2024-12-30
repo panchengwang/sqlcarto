@@ -79,11 +79,16 @@ begin
         || usertype || ','
         || quote_literal(salt)
     || ')';
-    raise notice '%', sqlstr;
     execute sqlstr;
     return id;
 end;
 $$ language 'plpgsql';
+
+
+create or replace function sc_user_is_activated(username varchar) returns boolean as 
+$$
+    select activated from sc_users where user_name = $1;
+$$ language 'sql';
 
 create or replace function sc_user_set_activate_by_id(userid varchar, isactivated boolean) returns varchar as 
 $$
@@ -96,6 +101,11 @@ $$
     select sc_user_set_activate_by_id(sc_user_create($1,$2,0),true);
 $$ language 'sql';
 
+
+create or replace function sc_user_get_id_by_name(username varchar) returns varchar as 
+$$
+    select id from sc_users where user_name = $1;
+$$ language 'sql';
 
 
 

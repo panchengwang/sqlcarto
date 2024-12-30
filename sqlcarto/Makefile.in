@@ -27,7 +27,8 @@ OBJS = sqlcarto.o \
 	china_proj.o \
 	china_trans.o \
 	bytea2cstring.o \
-	symbol_inout.o
+	symbol_inout.o \
+	tile.o
 
 # Libraries to link into the module (proj, geos)
 #

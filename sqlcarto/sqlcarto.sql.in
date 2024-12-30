@@ -151,112 +151,120 @@ $$
         sc_uuid();
 $$ language 'sql';
 
--- sqlcarto administrate module
 
-drop table if exists sc_server_nodes;
-create table sc_server_nodes(
-    id varchar(32) not null,
-    max_user_count  integer not null default 200,          -- each node can afford service for no more than 200 users 
-    server_url varchar(1024),                              -- node service url for sqlcarto server
-    db_host varchar(16) not null,                          -- host or ip
-    db_storage_size float8 not null default 20000,         -- available space for database , unit: mega bytes
-    db_reserved_factor float8 not null default 0.2,        -- if db storage occupied than (db_storage_size * (1-db_reserved_factor)), no operation can be done in this node
-    last_operate_time timestamp default now() not null
+
+-- ---------------------------------------------------------------
+-- 地图瓦片工具
+-- ---------------------------------------------------------------
+
+
+CREATE OR REPLACE FUNCTION tile_in(cstring)
+	RETURNS tile
+	AS 'MODULE_PATHNAME','tile_in'
+	LANGUAGE 'c' IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION tile_out(tile)
+	RETURNS cstring
+	AS 'MODULE_PATHNAME','tile_out'
+	LANGUAGE 'c' IMMUTABLE STRICT;
+
+
+-- Availability: 3.4.2
+CREATE TYPE tile (
+   internallength = 12,
+   input = tile_in,
+   output = tile_out,
+   alignment = int4
 );
 
+-- 瓦片转换成经纬度，左上角坐标
+CREATE OR REPLACE FUNCTION sc_tile_to_lonlat(tile)
+RETURNS geometry
+AS 'MODULE_PATHNAME','tile_to_lonlat'
+LANGUAGE C IMMUTABLE STRICT;
 
--- 
-create or replace function sc_add_node( maxuser float8, serverurl varchar, 
-    dbhost varchar, dbmaxsize float8, dbreservfact float8) 
-returns varchar as 
+-- 经纬度转换成瓦片
+CREATE OR REPLACE FUNCTION sc_lonlat_to_tile(geometry,integer)
+RETURNS tile
+AS 'MODULE_PATHNAME','lonlat_to_tile'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION sc_x(tile)
+RETURNS integer
+AS 'MODULE_PATHNAME','tile_x'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION sc_set_x(tile,integer)
+RETURNS tile
+AS 'MODULE_PATHNAME','tile_set_x'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION sc_y(tile)
+RETURNS integer
+AS 'MODULE_PATHNAME','tile_y'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION sc_set_y(tile,integer)
+RETURNS tile
+AS 'MODULE_PATHNAME','tile_set_y'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION sc_z(tile)
+RETURNS integer
+AS 'MODULE_PATHNAME','tile_z'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION sc_set_z(tile,integer)
+RETURNS tile
+AS 'MODULE_PATHNAME','tile_set_z'
+LANGUAGE C IMMUTABLE STRICT;
+
+-- 根据缩放级别计算分辨率
+-- tilesize为瓦片的图像宽/高，一般为256像素
+-- 为适应高清屏幕，现在的地图瓦片已经由512像素大小的了
+-- 注意此分辨率为一个像素代表Web墨卡托坐标系（不是WGS84！）下的长度
+create or replace function sc_get_resolution_of_zoom_level(z integer, tilesize integer) returns float8
+as
 $$
-declare
-    nodeid varchar;
-begin
-    nodeid := sc_uuid();
-    insert into sc_server_nodes(id,max_user_count, server_url, db_host,db_storage_size,db_reserved_factor) 
-        values (nodeid,maxuser,serverurl, dbhost,dbmaxsize,dbreservfact);
-    return nodeid;
-end;
-$$ language 'plpgsql';
-
-
-drop table if exists sc_user_types;
-create table sc_user_types(
-    id integer not null unique,
-    type_name varchar(64)
-);
-insert into sc_user_types(id, type_name) values
-    (0, 'Adminstrator'),
-    (1, 'Normal user'),
-    (2, 'Guest');
-
-drop table if exists sc_users;
-create table sc_users(
-    id varchar(32) primary key default sc_uuid() not null,
-    user_name varchar(128) unique not null,
-    password varchar(128) not null,
-    user_type integer not null default 1,
-    salt varchar(6) not null,
-    verify_code varchar(6) default '',
-    verify_code_gen_time timestamp not null default now(),
-    verify_code_valid_time interval default '10 minutes',
-    token varchar(256) not null default '',
-    token_gen_time timestamp null default now(),
-    token_valid_time interval default '5 minutes',
-    activated boolean default false not null,
-    db_size float not null default 20000,                           -- 
-    create_time timestamp default now()
-);
-
-
-create or replace function sc_user_exist(username varchar) returns boolean as 
+select
+    (st_x(st_transform(sc_tile_to_lonlat(('TILE(1,0,' || $1 || ')')::tile),3857))
+    - st_x(st_transform(sc_tile_to_lonlat(('TILE(0,0,' || $1 || ')')::tile),3857)))/$2
+  ;
 $$
-    select count(1) = 1 from sc_users where username = $1;
-$$ language 'sql';
+language 'sql';
 
 
-create or replace function sc_user_create(username varchar, password varchar, usertype integer) returns varchar as 
+-- 根据缩放级别计算分辨率
+-- 缺省采用256像素的瓦片大小
+-- 注意此分辨率为一个像素代表Web墨卡托坐标系（不是WGS84！）下的长度
+CREATE OR REPLACE FUNCTION sc_get_resolution_of_zoom_level(z integer) returns float8 AS
 $$
-declare
-    id varchar;
-    sqlstr text;
-    salt varchar;
-begin
-    id := sc_uuid();
-    salt := sc_generate_code(6);
-    sqlstr := 'insert into sc_users(id,user_name,password,user_type,salt) values(' 
-        || quote_literal(id) || ','
-        || quote_literal(username) || ','
-        || quote_literal(md5(password || salt)) || ','
-        || usertype || ','
-        || quote_literal(salt)
-    || ')';
-    raise notice '%', sqlstr;
-    execute sqlstr;
-    return id;
-end;
-$$ language 'plpgsql';
-
-create or replace function sc_user_set_activate_by_id(userid varchar, isactivated boolean) returns varchar as 
+  select sc_get_resolution_of_zoom_level($1,256);
 $$
-    update sc_users set activated = $2 where id = $1;
-    select $1;
-$$ language 'sql';
+LANGUAGE 'sql';
 
-create or replace function sc_user_create_admin(username varchar, password varchar) returns varchar as 
+
+-- 得到所有的分辨率
+-- 瓦片大小为256
+CREATE OR REPLACE FUNCTION sc_get_resolutions_of_all_zoom_levels(maxlevel integer)
+RETURNS setof float8 as
 $$
-    select sc_user_set_activate_by_id(sc_user_create($1,$2,0),true);
-$$ language 'sql';
+  select
+    sc_get_resolution_of_zoom_level(A.z) as resolution
+  from
+    (select generate_series(0,$1) as z) as A;
+$$
+LANGUAGE 'sql';
 
-
-
-
-select sc_user_create_admin('pcwang','123456');
-
-
-
-
+-- 得到所有的分辨率
+-- 瓦片大小为256
+-- 最多23级
+CREATE OR REPLACE FUNCTION sc_get_resolutions_of_all_zoom_levels()
+RETURNS setof float8 as
+$$
+  select sc_get_resolutions_of_all_zoom_levels(23);
+$$
+LANGUAGE 'sql';
 
 -- Send mail module
 
@@ -3004,6 +3012,123 @@ insert into sc_symbols(english, chinese, sym) values('triangle','三角形','
     ]
 }');
 
+-- sqlcarto administrate module
+
+drop table if exists sc_server_nodes;
+create table sc_server_nodes(
+    id varchar(32) not null,
+    max_user_count  integer not null default 200,          -- each node can afford service for no more than 200 users 
+    server_url varchar(1024),                              -- node service url for sqlcarto server
+    db_host varchar(16) not null,                          -- host or ip
+    db_storage_size float8 not null default 20000,         -- available space for database , unit: mega bytes
+    db_reserved_factor float8 not null default 0.2,        -- if db storage occupied than (db_storage_size * (1-db_reserved_factor)), no operation can be done in this node
+    last_operate_time timestamp default now() not null
+);
+
+
+-- 
+create or replace function sc_add_node( maxuser float8, serverurl varchar, 
+    dbhost varchar, dbmaxsize float8, dbreservfact float8) 
+returns varchar as 
+$$
+declare
+    nodeid varchar;
+begin
+    nodeid := sc_uuid();
+    insert into sc_server_nodes(id,max_user_count, server_url, db_host,db_storage_size,db_reserved_factor) 
+        values (nodeid,maxuser,serverurl, dbhost,dbmaxsize,dbreservfact);
+    return nodeid;
+end;
+$$ language 'plpgsql';
+
+
+drop table if exists sc_user_types;
+create table sc_user_types(
+    id integer not null unique,
+    type_name varchar(64)
+);
+insert into sc_user_types(id, type_name) values
+    (0, 'Adminstrator'),
+    (1, 'Normal user'),
+    (2, 'Guest');
+
+drop table if exists sc_users;
+create table sc_users(
+    id varchar(32) primary key default sc_uuid() not null,
+    user_name varchar(128) unique not null,
+    password varchar(128) not null,
+    user_type integer not null default 1,
+    salt varchar(6) not null,
+    verify_code varchar(6) default '',
+    verify_code_gen_time timestamp not null default '1970-01-01'::timestamp,
+    verify_code_valid_time interval default '10 minutes',
+    token varchar(256) not null default '',
+    token_gen_time timestamp null default now(),
+    token_valid_time interval default '5 minutes',
+    activated boolean default false not null,
+    db_size float not null default 20000,                           -- 
+    create_time timestamp default now()
+);
+
+
+create or replace function sc_user_exist(username varchar) returns boolean as 
+$$
+    select count(1) = 1 from sc_users where user_name = $1;
+$$ language 'sql';
+
+
+create or replace function sc_user_create(username varchar, password varchar, usertype integer) returns varchar as 
+$$
+declare
+    id varchar;
+    sqlstr text;
+    salt varchar;
+begin
+    id := sc_uuid();
+    salt := sc_generate_code(6);
+    sqlstr := 'insert into sc_users(id,user_name,password,user_type,salt) values(' 
+        || quote_literal(id) || ','
+        || quote_literal(username) || ','
+        || quote_literal(md5(password || salt)) || ','
+        || usertype || ','
+        || quote_literal(salt)
+    || ')';
+    execute sqlstr;
+    return id;
+end;
+$$ language 'plpgsql';
+
+
+create or replace function sc_user_is_activated(username varchar) returns boolean as 
+$$
+    select activated from sc_users where user_name = $1;
+$$ language 'sql';
+
+create or replace function sc_user_set_activate_by_id(userid varchar, isactivated boolean) returns varchar as 
+$$
+    update sc_users set activated = $2 where id = $1;
+    select $1;
+$$ language 'sql';
+
+create or replace function sc_user_create_admin(username varchar, password varchar) returns varchar as 
+$$
+    select sc_user_set_activate_by_id(sc_user_create($1,$2,0),true);
+$$ language 'sql';
+
+
+create or replace function sc_user_get_id_by_name(username varchar) returns varchar as 
+$$
+    select id from sc_users where user_name = $1;
+$$ language 'sql';
+
+
+
+select sc_user_create_admin('pcwang','123456');
+
+
+
+
+
 --
 
 create table sc_services(
@@ -3039,6 +3164,17 @@ end;
 $$ language 'plpgsql';
 
 
+create or replace function sc_verify_code_is_expired(username varchar) returns boolean as 
+$$
+    select 
+        (verify_code_gen_time + verify_code_valid_time < now()) 
+    from 
+        sc_users 
+    where 
+        user_name = $1
+$$ language 'sql';
+
+
 
 --      {
 --          "type": "USER_GET_VERIFY_CODE",
@@ -3057,7 +3193,22 @@ begin
     if not sc_user_exist(request->'data'->>'username') then 
         perform sc_user_create(request->'data'->>'username', '',1);
     end if;
-    update sc_users set verify_code = code where user_name = (request->'data'->>'username');
+
+    if not sc_verify_code_is_expired(request->'data'->>'username') then 
+        select verify_code into code from sc_users where user_name = (request->'data'->>'username');
+        return jsonb_build_object(
+            'success', true,
+            'message', 'Verify code has been sent to ' || (request->'data'->>'username')
+        );
+    end if;
+
+    update sc_users 
+    set 
+        verify_code = code,
+        verify_code_gen_time = now()
+    where 
+        user_name = (request->'data'->>'username');
+
     ok := sc_send_mail( request->'data'->>'username', 'verify code', code ) ;
     if ok then 
         return jsonb_build_object(
@@ -3078,8 +3229,44 @@ $$ language 'plpgsql';
 --     '{
 --          "type": "USER_GET_VERIFY_CODE",
 --          "data": {
---              "username": "wang_wang_lao@163.com"
+--              "username": ""
 --          }
 --      }'::jsonb
 -- );
 
+
+--      {
+--          "type": "USER_CREATE",
+--          "data": {
+--              "username": "",
+--              "password": "",
+--              "verify_code": ""
+--          }
+--      }
+delete from sc_services where request_type = 'USER_CREATE';
+insert into sc_services(request_type, function_name) values('USER_CREATE','sc_user_create');
+create or replace function sc_user_create(request jsonb) returns jsonb as 
+$$
+declare
+    sqlstr text;
+    userid varchar;
+    username varchar;
+begin
+    username := (request->'data'->>'username');
+    if sc_user_exist(username) and sc_user_is_activated(username) then 
+        return jsonb_build_object(
+            'success', false,
+            'message', 'User exist! Please select another username.'
+        );
+    end if;
+    
+    userid := sc_user_get_id_by_name(username);
+    perform sc_user_set_activate_by_id(userid, true);
+    execute 'create user  sc_user_' || userid ;
+    return jsonb_build_object(
+        'success', true,
+        'message', 'User has been created!'
+    );
+end;
+$$
+language 'plpgsql';
