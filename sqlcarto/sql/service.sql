@@ -67,7 +67,8 @@ begin
         select verify_code into code from sc_users where user_name = (request->'data'->>'username');
         return jsonb_build_object(
             'success', true,
-            'message', 'Verify code has been sent to ' || (request->'data'->>'username')
+            'message', 'Verify code has been sent to ' || (request->'data'->>'username'),
+            'data',''
         );
     end if;
 
@@ -82,13 +83,15 @@ begin
     if ok then 
         return jsonb_build_object(
             'success', ok,
-            'message', 'Verify code has been sent to ' || (request->'data'->>'username')
+            'message', 'Verify code has been sent to ' || (request->'data'->>'username'),
+            'data',''
         );  
     end if;
 
     return jsonb_build_object(
         'success', ok,
-        'message', 'Failed to send verify code'
+        'message', 'Failed to send verify code',
+        'data',''
     );
     
 end;
@@ -121,28 +124,58 @@ declare
     userid varchar;
     username varchar;
     password varchar;
+    dbname varchar;
 begin
     username := (request->'data'->>'username');
     if sc_user_exist(username) and sc_user_is_activated(username) then 
         return jsonb_build_object(
             'success', false,
-            'message', 'User exist! Please select another username.'
+            'message', 'User exist! Please select another username.',
+            'data',''
         );
     end if;
     
     userid := sc_user_get_id_by_name(username);
     perform sc_user_set_activate_by_id(userid, true);
+    dbname := 'sc_db_' || userid;
     execute 'select password from sc_users where id = ' || quote_literal(userid) into password;
     execute 'create user  sc_user_' || userid || ' password ' || quote_literal(password) ;
-    execute 'create schema sc_schema_' || userid;
-    execute 'alter schema sc_schema_' || userid || ' owner to sc_user_' || userid; 
+    -- execute 'create database ' || dbname;
+    -- execute 'alter database ' || dbname || ' owner to sc_user_' || userid;
+    -- execute 'grand all on database ' || dbname || ' to sc_user_' || userid;
+    -- execute 'select password from sc_users where id = ' || quote_literal(userid) into password;
+    -- execute 'create user  sc_user_' || userid || ' password ' || quote_literal(password) ;
+    -- execute 'create schema sc_schema_' || userid;
+    -- execute 'alter schema sc_schema_' || userid || ' owner to sc_user_' || userid; 
+    -- execute 'grant select on sc_users to sc_user_' || userid;
+    -- execute 'grant select on sc_server_nodes to sc_user_' || userid;
     return jsonb_build_object(
         'success', true,
-        'message', 'User has been created!'
+        'message', 'User has been created!',
+        'data',''
     );
 end;
 $$
 language 'plpgsql';
+
+
+create or replace function sc_catalog_create_for_user(username varchar) returns varchar as 
+$$
+declare
+    userid varchar;
+    sqlstr text;
+begin
+    userid := sc_user_get_id_by_name(username);
+    
+    sqlstr := 'create table sc_schema_' || userid || '.sc_catalog_' || userid || '(
+        id varchar(32) primary key,
+        parent_id varchar(32) not null default ' || quote_literal('0') || ',
+        name varchar(256) not null default ' || quote_literal('unnamed') || ',
+        type integer default 0
+    )';
+    return 'ok';
+end;
+$$ language 'plpgsql';
 
 
 create or replace function sc_user_drop(username varchar) returns varchar as 
@@ -151,9 +184,11 @@ declare
     userid varchar;
 begin
     userid := sc_user_get_id_by_name(username);
-    execute 'drop schema sc_schema_' || userid;
+    execute 'drop schema sc_schema_' || userid || ' cascade';
+    execute 'update sc_users set activated = false where user_name=' || quote_literal(username) ;
+    execute 'revoke select on sc_users from sc_user_' || userid;
+    execute 'revoke select on sc_server_nodes from sc_user_' || userid;
     execute 'drop user sc_user_' || userid;
-    execute 'update sc_users set activated = false where username=' || quote_literal(username) ;
     return 'ok';
 end;
 $$ language 'plpgsql';

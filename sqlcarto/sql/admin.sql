@@ -114,4 +114,31 @@ select sc_user_create_admin('pcwang','123456');
 
 
 
+create table sc_layer_types(
+    id integer not null default 0,
+    name varchar(256)
+);
 
+insert into sc_layer_types(id,name) values
+    (0, 'UNKNONW'),
+    (1, 'TABLE'),
+    (2, 'GROUP'),
+    (3, 'POINT'),
+    (4, 'LINESTRING'),
+    (5, 'POLYGON'),
+    (6, 'MULTIPOINT'),
+    (7, 'MULTILINESTRING'),
+    (8, 'MULTIPOINT'),
+    (9, 'GEOMETRYCOLLECTION'),
+    (10, 'TRIANGLE'),
+    (11, 'NET');
+
+
+create table sc_catalog(
+    id varchar(32) primary key,
+    parent_id varchar(32) not null,
+    name varchar(64) default 'unnamed',
+    layer_type integer default 0,
+    create_time timestamp default NOW(),
+    last_time timestamp default now()
+);
