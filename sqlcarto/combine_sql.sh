@@ -14,3 +14,4 @@ cat ${CUR_DIR}/sql/symbol_meta.sql >>  ${CUR_DIR}/sqlcarto.sql.in
 
 cat ${CUR_DIR}/sql/admin.sql >> ${CUR_DIR}/sqlcarto.sql.in
 cat ${CUR_DIR}/sql/service.sql >>  ${CUR_DIR}/sqlcarto.sql.in
+cat ${CUR_DIR}/sql/service_user.sql >>  ${CUR_DIR}/sqlcarto.sql.in
