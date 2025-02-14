@@ -89,6 +89,18 @@ create table sc_users(
     create_time timestamp default now()
 );
 
+drop table if exists sc_user_configuration;
+create table sc_user_configuration(
+    key_name varchar(256) unique not null,
+    key_value varchar(2048) default ''
+);
+insert into sc_user_configuration(key_name,key_value) values
+    ('google_key',''),
+    ('bing_key',''),
+    ('gaode_key',''),
+    ('gaode_password',''),
+    ('tianditu_key','');
+
 
 create or replace function sc_user_exist(username varchar) returns boolean as 
 $$
