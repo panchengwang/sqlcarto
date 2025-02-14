@@ -83,14 +83,14 @@ begin
     ok := sc_send_mail( request->'data'->>'username', 'captcha(verification code)', code ) ;
     if ok then 
         return jsonb_build_object(
-            'success', ok,
+            'success', true,
             'message', 'CaptCha(verification code) has been sent to ' || (request->'data'->>'username'),
             'data',''
         );  
     end if;
 
     return jsonb_build_object(
-        'success', ok,
+        'success', false,
         'message', 'Failed to send captCha(verification code)',
         'data',''
     );
@@ -116,6 +116,7 @@ declare
     dblinkid varchar;
     dblinksqlstr text;
     myrec record;
+    v_result boolean;
 begin
     username := (request->'data'->>'username');
     if sc_user_exist(username) and sc_user_is_activated(username) then 
@@ -125,6 +126,18 @@ begin
             'data',''
         );
     end if;
+    
+    select ( (request->'data'->>'captcha') = captcha ) into v_result from sc_users where user_name = username;
+    if (v_result is null) or (not v_result) then 
+        return jsonb_build_object(
+            'success', false,
+            'message', 'Captcha is invalid!',
+            'data',''
+        );
+    end if;
+
+    
+
     nodeid := sc_get_available_node();
     if nodeid = '' then 
         return jsonb_build_object(
@@ -136,7 +149,7 @@ begin
 
     userid := sc_user_get_id_by_name(username);
     perform sc_user_set_activate_by_id(userid, true);
-    update sc_users set node_id = nodeid where id = userid;
+    update sc_users set node_id = nodeid, password=md5((request->'data'->>'password') || salt) where id = userid;
     update sc_server_nodes set user_count = user_count + 1 where id = nodeid;
     select db_connect_string into nodeconnstr from sc_server_nodes where id = nodeid;
     dblinkid := sc_uuid();
@@ -173,6 +186,16 @@ begin
         )
     ';
     perform dblink_exec(dblinkid,dblinksqlstr);
+
+    dblinksqlstr := '
+        create table sc_configuration_' || userid || '(
+            key_name varchar(256) unique not null,
+            key_value varchar(2048) default ' || quote_literal('') || '
+        );
+        insert into sc_configuration_' || userid || '(key_name, key_value)
+            select key_name, key_value from sc_user_configuration
+    ';
+    perform dblink_exec(dblinkid, dblinksqlstr);
 
 
     perform dblink_disconnect(dblinkid);
@@ -228,3 +251,25 @@ begin
 end;
 $$
 language 'plpgsql';
+
+
+
+
+delete from sc_services where request_type = 'USER_SIGN_IN';
+insert into sc_services(request_type, function_name) values('USER_SIGN_IN','sc_user_sign_in');
+create or replace function sc_user_sign_in(request jsonb) returns jsonb as 
+$$
+declare
+    sqlstr text;
+    userid varchar;
+    username varchar;
+    password varchar;
+    dbname varchar;
+begin
+    return jsonb_build_object(
+        'success',true,
+        'message','ok',
+        'data',''
+    );
+end;
+$$ language 'plpgsql';
