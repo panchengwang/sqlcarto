@@ -3246,6 +3246,13 @@ declare
 begin
     typestr := request->>'type';
     select function_name into funcname from sc_services where request_type = request->>'type';
+    if funcname is null then 
+        return jsonb_build_object(
+            'success', false,
+            'message', 'Invalid request type: ' || typestr,
+            'data',''
+        );
+    end if;
     sqlstr := 'select ' || funcname || '(' || quote_literal(request::text) || '::jsonb)';
     execute sqlstr into response; 
     return response;
@@ -3543,3 +3550,25 @@ begin
 end;
 $$
 language 'plpgsql';
+
+
+
+
+delete from sc_services where request_type = 'USER_SIGN_IN';
+insert into sc_services(request_type, function_name) values('USER_SIGN_IN','sc_user_sign_in');
+create or replace function sc_user_sign_in(request jsonb) returns jsonb as 
+$$
+declare
+    sqlstr text;
+    userid varchar;
+    username varchar;
+    password varchar;
+    dbname varchar;
+begin
+    return jsonb_build_object(
+        'success',true,
+        'message','ok',
+        'data',''
+    );
+end;
+$$ language 'plpgsql';
