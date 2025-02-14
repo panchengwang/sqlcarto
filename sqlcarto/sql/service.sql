@@ -26,6 +26,13 @@ declare
 begin
     typestr := request->>'type';
     select function_name into funcname from sc_services where request_type = request->>'type';
+    if funcname is null then 
+        return jsonb_build_object(
+            'success', false,
+            'message', 'Invalid request type: ' || typestr,
+            'data',''
+        );
+    end if;
     sqlstr := 'select ' || funcname || '(' || quote_literal(request::text) || '::jsonb)';
     execute sqlstr into response; 
     return response;
