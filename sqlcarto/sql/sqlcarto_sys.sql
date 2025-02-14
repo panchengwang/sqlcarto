@@ -57,40 +57,7 @@ language 'sql';
 
 
 
--- Sqlcarto configuration table 
-create table sc_configuration(
-    key_name varchar primary key,
-    key_value varchar default '',
-    description varchar default '' not null
-);
-insert into sc_configuration(key_name,key_value, description)
-values
-    ('EMAIL_USER','sqlcartotest@126.com','email of sender'),
-    ('EMAIL_PASSWORD','SCUGOXHGWAEZUEQH','email password'),
-    ('EMAIL_SMTP','smtps://smtp.126.com:465','smtp server');
--- values
---     ('EMAIL_USER','','email of sender'),
---     ('EMAIL_PASSWORD','','email password'),
---     ('EMAIL_SMTP','','smtp server');
---     'sqlcartotest@126.com',
---     'sqlcartotest@126.com',
---     '测试一下',
---     '这是一个从postgresql sqlcarto扩展发送过来的测试邮件',
---     'smtps://smtp.126.com:465',
---     'SCUGOXHGWAEZUEQH'
 
-
-
-
---  Function    :   sc_get_configuration
---                  Get configuration of a key.
---  Parameter   :  
---                  keyname     
---  Result      :   Configuration of a key. 
-create or replace function sc_get_configuration(kename varchar) returns varchar as
-$$
-    select key_value from sc_configuration where key_name = $1;
-$$ language 'sql';
 
 
 
