@@ -13,7 +13,7 @@ $$ language 'sql';
 --      {
 --          "type": "USER_IF_AVAILABLE",
 --          "data": {
---              "username": "wang_wang_lao@163.com"
+--              "username": "email/mobile"
 --          }
 --      }
 delete from sc_services where request_type = 'USER_IF_AVAILABLE';
@@ -48,7 +48,7 @@ $$ language 'plpgsql';
 --      {
 --          "type": "USER_GET_CAPTCHA",
 --          "data": {
---              "username": "wang_wang_lao@163.com"
+--              "username": "email/mobile"
 --          }
 --      }
 delete from sc_services where request_type = 'USER_GET_CAPTCHA';
@@ -101,7 +101,14 @@ $$ language 'plpgsql';
 
 
 
-
+--      {
+--          "type": "USER_REGISTER",
+--          "data": {
+--              "username": "email/mobile",
+--              "password": "",
+--              "captcha": ""
+--          }
+--      }
 delete from sc_services where request_type = 'USER_REGISTER';
 insert into sc_services(request_type, function_name) values('USER_REGISTER','sc_user_register');
 create or replace function sc_user_register(request jsonb) returns jsonb as 
@@ -110,7 +117,6 @@ declare
     sqlstr text;
     userid varchar;
     username varchar;
-    dbname varchar;
     nodeid varchar;
     nodeconnstr varchar;
     dblinkid varchar;
@@ -135,7 +141,13 @@ begin
             'data',''
         );
     end if;
-
+    if sc_captcha_is_expired(username) then 
+        return jsonb_build_object(
+            'success', false,
+            'message', 'Captcha expired!',
+            'data',''
+        );
+    end if;
     
 
     nodeid := sc_get_available_node();
@@ -209,43 +221,63 @@ $$
 language 'plpgsql';
 
 
+--      {
+--          "type": "USER_RESET_PASSWORD",
+--          "data": {
+--              "username": "email/mobile",
+--              "password": "",
+--              "captcha": ""
+--          }
+--      }
 delete from sc_services where request_type = 'USER_RESET_PASSWORD';
 insert into sc_services(request_type, function_name) values('USER_RESET_PASSWORD','sc_user_reset_password');
 create or replace function sc_user_reset_password(request jsonb) returns jsonb as 
 $$
 declare
-    sqlstr text;
-    userid varchar;
-    username varchar;
-    password varchar;
-    dbname varchar;
+    v_sqlstr text;
+    v_userid varchar;
+    v_username varchar;
+    v_password varchar;
+    v_dblinkid varchar;
+    v_nodeconnstr varchar;
+	v_result boolean;
 begin
-    username := (request->'data'->>'username');
-    if sc_user_exist(username) and sc_user_is_activated(username) then 
+    v_username := (request->'data'->>'username');
+    if not sc_user_exist(v_username)  then 
         return jsonb_build_object(
             'success', false,
-            'message', 'User exist! Please select another username.',
+            'message', 'User does not exist!',
+            'data',''
+        );
+    end if;
+    select ( (request->'data'->>'captcha') = captcha ) into v_result from sc_users where user_name = v_username;
+    if (v_result is null) or (not v_result) then 
+        return jsonb_build_object(
+            'success', false,
+            'message', 'Captcha is invalid!',
+            'data',''
+        );
+    end if;
+    if sc_captcha_is_expired(v_username) then 
+        return jsonb_build_object(
+            'success', false,
+            'message', 'Captcha expired!',
             'data',''
         );
     end if;
     
-    userid := sc_user_get_id_by_name(username);
-    perform sc_user_set_activate_by_id(userid, true);
-    -- dbname := 'sc_db_' || userid;
-    -- execute 'select password from sc_users where id = ' || quote_literal(userid) into password;
-    -- execute 'create user  sc_user_' || userid || ' password ' || quote_literal(password) ;
-    -- execute 'create database ' || dbname;
-    -- execute 'alter database ' || dbname || ' owner to sc_user_' || userid;
-    -- execute 'grand all on database ' || dbname || ' to sc_user_' || userid;
-    -- execute 'select password from sc_users where id = ' || quote_literal(userid) into password;
-    -- execute 'create user  sc_user_' || userid || ' password ' || quote_literal(password) ;
-    -- execute 'create schema sc_schema_' || userid;
-    -- execute 'alter schema sc_schema_' || userid || ' owner to sc_user_' || userid; 
-    -- execute 'grant select on sc_users to sc_user_' || userid;
-    -- execute 'grant select on sc_server_nodes to sc_user_' || userid;
+    v_userid := sc_user_get_id_by_name(v_username);
+    select md5( (request->'data'->>'password') || salt) into v_password from sc_users where id = v_userid;
+    v_sqlstr := 'update sc_users set password = ' || quote_literal(v_password) || ' where id=' || quote_literal(v_userid);
+    execute v_sqlstr;
+    select ssn.db_connect_string into v_nodeconnstr from sc_server_nodes ssn, sc_users su where ssn.id = su.node_id and su.id = v_userid;
+    v_dblinkid := sc_uuid();
+    perform dblink_connect(v_dblinkid, v_nodeconnstr);
+    perform dblink_exec(v_dblinkid, v_sqlstr );
+    perform dblink_disconnect(v_dblinkid);
     return jsonb_build_object(
         'success', true,
-        'message', 'User has been created!',
+        'message', 'Password has been reseted!',
         'data',''
     );
 end;
@@ -254,22 +286,55 @@ language 'plpgsql';
 
 
 
-
+--      {
+--          "type": "USER_SIGN_IN",
+--          "data": {
+--              "username": "email/mobile",
+--              "password": ""
+--          }
+--      }
 delete from sc_services where request_type = 'USER_SIGN_IN';
 insert into sc_services(request_type, function_name) values('USER_SIGN_IN','sc_user_sign_in');
 create or replace function sc_user_sign_in(request jsonb) returns jsonb as 
 $$
 declare
-    sqlstr text;
-    userid varchar;
-    username varchar;
-    password varchar;
-    dbname varchar;
+    v_sqlstr text;
+    v_userid varchar;
+    v_username varchar;
+    v_password varchar;
+    v_token varchar;
+    v_nodeconnstr varchar;
+	v_result boolean;
+    v_nodeurl varchar;
+	v_dblinkid varchar;
 begin
+    v_username := (request->'data'->>'username');
+    v_userid := sc_user_get_id_by_name(v_username);
+    v_password := (request->'data'->>'password');
+    
+	select (count(1)=1) into v_result from sc_users where user_name = v_username and password = md5(v_password || salt) ;
+	if not v_result then 
+		return jsonb_build_object(
+            'success', false,
+            'message', 'Invalid username or password!',
+            'data',''
+        );
+	end if;
+    v_token := sc_generate_code(128) || sc_uuid();
+    select ssn.db_connect_string , ssn.server_url into  v_nodeconnstr, v_nodeurl from sc_server_nodes ssn, sc_users su where ssn.id = su.node_id and su.id = v_userid;
+    v_dblinkid := sc_uuid();
+    v_sqlstr := 'update sc_users set token=' || quote_literal(v_token) || ', token_gen_time = now() where id=' || quote_literal(v_userid); 
+    perform dblink_connect(v_dblinkid, v_nodeconnstr);
+    perform dblink_exec(v_dblinkid, v_sqlstr );
+    perform dblink_disconnect(v_dblinkid);
+    
     return jsonb_build_object(
         'success',true,
         'message','ok',
-        'data',''
+        'data',jsonb_build_object(
+            'token', v_token,
+            'node_url', v_nodeurl
+        )
     );
 end;
 $$ language 'plpgsql';
