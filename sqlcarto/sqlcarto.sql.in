@@ -57,40 +57,7 @@ language 'sql';
 
 
 
--- Sqlcarto configuration table 
-create table sc_configuration(
-    key_name varchar primary key,
-    key_value varchar default '',
-    description varchar default '' not null
-);
-insert into sc_configuration(key_name,key_value, description)
-values
-    ('EMAIL_USER','sqlcartotest@126.com','email of sender'),
-    ('EMAIL_PASSWORD','SCUGOXHGWAEZUEQH','email password'),
-    ('EMAIL_SMTP','smtps://smtp.126.com:465','smtp server');
--- values
---     ('EMAIL_USER','','email of sender'),
---     ('EMAIL_PASSWORD','','email password'),
---     ('EMAIL_SMTP','','smtp server');
---     'sqlcartotest@126.com',
---     'sqlcartotest@126.com',
---     '测试一下',
---     '这是一个从postgresql sqlcarto扩展发送过来的测试邮件',
---     'smtps://smtp.126.com:465',
---     'SCUGOXHGWAEZUEQH'
 
-
-
-
---  Function    :   sc_get_configuration
---                  Get configuration of a key.
---  Parameter   :  
---                  keyname     
---  Result      :   Configuration of a key. 
-create or replace function sc_get_configuration(kename varchar) returns varchar as
-$$
-    select key_value from sc_configuration where key_name = $1;
-$$ language 'sql';
 
 
 
@@ -268,6 +235,44 @@ LANGUAGE 'sql';
 
 -- Send mail module
 
+
+-- Sqlcarto email configuration  
+create table sc_email_configuration(
+    key_name varchar primary key,
+    key_value varchar default '',
+    description varchar default '' not null
+);
+insert into sc_email_configuration(key_name,key_value, description)
+values
+    ('EMAIL_USER','sqlcartotest@126.com','email of sender'),
+    ('EMAIL_PASSWORD','SCUGOXHGWAEZUEQH','email password'),
+    ('EMAIL_SMTP','smtps://smtp.126.com:465','smtp server');
+-- values
+--     ('EMAIL_USER','','email of sender'),
+--     ('EMAIL_PASSWORD','','email password'),
+--     ('EMAIL_SMTP','','smtp server');
+--     'sqlcartotest@126.com',
+--     'sqlcartotest@126.com',
+--     '测试一下',
+--     '这是一个从postgresql sqlcarto扩展发送过来的测试邮件',
+--     'smtps://smtp.126.com:465',
+--     'SCUGOXHGWAEZUEQH'
+
+
+
+
+--  Function    :   sc_get_email_configuration
+--                  Get configuration of a key.
+--  Parameter   :  
+--                  keyname     
+--  Result      :   Configuration of a key. 
+create or replace function sc_get_email_configuration(kename varchar) returns varchar as
+$$
+    select key_value from sc_email_configuration where key_name = $1;
+$$ language 'sql';
+
+
+
 -- Function     :  sc_send_mail
 -- Parameters   :   
 --      sender      email address of sender
@@ -303,12 +308,12 @@ create or replace function sc_send_mail(
 returns boolean AS 
 $$
     select sc_send_mail(
-        sc_get_configuration('EMAIL_USER'),
+        sc_get_email_configuration('EMAIL_USER'),
         $1,
         $2,
         $3,
-        sc_get_configuration('EMAIL_SMTP'),
-        sc_get_configuration('EMAIL_PASSWORD')
+        sc_get_email_configuration('EMAIL_SMTP'),
+        sc_get_email_configuration('EMAIL_PASSWORD')
     );
 $$ language 'sql';
 
@@ -337,7 +342,6 @@ returns boolean AS
 $$
     select sc_send_mail($1,$2,$3);
 $$ LANGUAGE 'sql';
-
 
 
 
@@ -3103,6 +3107,18 @@ create table sc_users(
     create_time timestamp default now()
 );
 
+drop table if exists sc_user_configuration;
+create table sc_user_configuration(
+    key_name varchar(256) unique not null,
+    key_value varchar(2048) default ''
+);
+insert into sc_user_configuration(key_name,key_value) values
+    ('google_key',''),
+    ('bing_key',''),
+    ('gaode_key',''),
+    ('gaode_password',''),
+    ('tianditu_key','');
+
 
 create or replace function sc_user_exist(username varchar) returns boolean as 
 $$
@@ -3359,14 +3375,14 @@ begin
     ok := sc_send_mail( request->'data'->>'username', 'captcha(verification code)', code ) ;
     if ok then 
         return jsonb_build_object(
-            'success', ok,
+            'success', true,
             'message', 'CaptCha(verification code) has been sent to ' || (request->'data'->>'username'),
             'data',''
         );  
     end if;
 
     return jsonb_build_object(
-        'success', ok,
+        'success', false,
         'message', 'Failed to send captCha(verification code)',
         'data',''
     );
@@ -3392,6 +3408,7 @@ declare
     dblinkid varchar;
     dblinksqlstr text;
     myrec record;
+    v_result boolean;
 begin
     username := (request->'data'->>'username');
     if sc_user_exist(username) and sc_user_is_activated(username) then 
@@ -3401,6 +3418,18 @@ begin
             'data',''
         );
     end if;
+    
+    select ( (request->'data'->>'captcha') = captcha ) into v_result from sc_users where user_name = username;
+    if (v_result is null) or (not v_result) then 
+        return jsonb_build_object(
+            'success', false,
+            'message', 'Captcha is invalid!',
+            'data',''
+        );
+    end if;
+
+    
+
     nodeid := sc_get_available_node();
     if nodeid = '' then 
         return jsonb_build_object(
@@ -3412,7 +3441,7 @@ begin
 
     userid := sc_user_get_id_by_name(username);
     perform sc_user_set_activate_by_id(userid, true);
-    update sc_users set node_id = nodeid where id = userid;
+    update sc_users set node_id = nodeid, password=md5((request->'data'->>'password') || salt) where id = userid;
     update sc_server_nodes set user_count = user_count + 1 where id = nodeid;
     select db_connect_string into nodeconnstr from sc_server_nodes where id = nodeid;
     dblinkid := sc_uuid();
@@ -3438,7 +3467,7 @@ begin
     perform dblink_exec(dblinkid,dblinksqlstr);
 
     dblinksqlstr := '
-        create table sc_' || userid || '_catalog(
+        create table sc_catalog_' || userid || '(
             id varchar(32) primary key,
             parent_id varchar(32) not null,
             name varchar(64) default ' || quote_literal('unnamed') || ',
@@ -3449,6 +3478,16 @@ begin
         )
     ';
     perform dblink_exec(dblinkid,dblinksqlstr);
+
+    dblinksqlstr := '
+        create table sc_configuration_' || userid || '(
+            key_name varchar(256) unique not null,
+            key_value varchar(2048) default ' || quote_literal('') || '
+        );
+        insert into sc_configuration_' || userid || '(key_name, key_value)
+            select key_name, key_value from sc_user_configuration
+    ';
+    perform dblink_exec(dblinkid, dblinksqlstr);
 
 
     perform dblink_disconnect(dblinkid);
