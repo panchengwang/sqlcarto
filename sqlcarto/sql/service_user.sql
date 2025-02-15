@@ -348,12 +348,26 @@ end;
 $$ language 'plpgsql';
 
 
-
+--  request:
 --      {
 --          "type": "USER_LOAD_WEB_MAP_KEYS",
 --          "data": {
 --              "username": "email/mobile",
 --              "token": ""
+--          }
+--      }
+--  resopnse:
+--      {
+--          "success": true,
+--          "message": "ok",
+--          "data": {
+--              "webmapkeys": {
+--                  "bing_key": "",
+--                  "gaode_key": "",
+--                  "google_key": "",
+--                  "tianditu_key": "",
+--                  "gaode_password": ""
+--              }
 --          }
 --      }
 delete from sc_services where request_type = 'USER_LOAD_WEB_MAP_KEYS';
@@ -408,6 +422,7 @@ begin
 	            ' || quote_literal('gaode_key') || ',
 	            ' || quote_literal('gaode_password') || '
         	)
+        order by key_name
         ';
     v_result_obj := jsonb_build_object();
     for v_myrec in execute v_sqlstr loop
@@ -427,6 +442,100 @@ $$ language 'plpgsql';
 
 
 
+create or replace function sc_user_check_token(v_username varchar, v_token varchar ) returns jsonb as 
+$$
+declare
+    v_result boolean;
+begin
+    v_result := true;
+    select count(1) = 1 into v_result from sc_users where user_name = v_username and token = v_token;
+
+    if not v_result then 
+        return jsonb_build_object(
+            'success', false,
+            'message', 'Invalid token!',
+            'data',''
+        );
+    end if;
+
+    if sc_token_is_expired(v_token) then 
+        return  jsonb_build_object(
+            'success', false,
+            'message', 'Token is expired!',
+            'data',''
+        );
+    end if;
+
+    return jsonb_build_object(
+        'success',true,
+        'message','ok',
+        'data',''
+    );
+end;
+$$ language 'plpgsql';
 
 
+--  request:
+--      {
+--          "type": "USER_SAVE_WEB_MAP_KEYS",
+--          "data": {
+--              "username": "email/mobile",
+--              "token": ""
+            --  "webmapkeys": {
+            --      "bing_key": "",
+            --      "gaode_key": "",
+            --      "google_key": "",
+            --      "tianditu_key": "",
+            --      "gaode_password": ""
+            --  }
+--          }
+--      }
+--  resopnse:
+--      {
+--          "success": true,
+--          "message": "ok",
+--          "data": ""
+--      }
+delete from sc_services where request_type = 'USER_SAVE_WEB_MAP_KEYS';
+insert into sc_services(request_type, function_name) values('USER_SAVE_WEB_MAP_KEYS','sc_user_save_web_map_keys');
+create or replace function sc_user_save_web_map_keys(request jsonb) returns jsonb as 
+$$
+declare
+    v_sqlstr text;
+    v_userid varchar;
+    v_username varchar;
+    v_password varchar;
+    v_token varchar;
+    v_nodeconnstr varchar;
+	v_result boolean;
+    v_result_obj jsonb;
+    v_nodeurl varchar;
+	v_dblinkid varchar;
+    v_myrec record;
+begin
+    v_username := request->'data'->>'username';
+    v_token := request->'data'->>'token';
+    v_userid := sc_user_get_id_by_name(v_username);
+    
+    v_result_obj := sc_user_check_token(v_username, v_token);
+    if not (v_result_obj->>'success')::boolean then 
+        return v_result_obj;
+    end if;
+
+    update sc_users set token_gen_time = now() where id = v_userid;
+
+    v_sqlstr := 'select key, value from  jsonb_each(' || quote_literal(request->'data'->>'webmapkeys') || '::jsonb)' ;
+    for v_myrec in execute v_sqlstr loop
+        v_sqlstr := 'update sc_configuration_' || v_userid || ' set key_value = ' || quote_literal(request->'data'->'webmapkeys'->>(v_myrec.key)) || '  where key_name = ' || quote_literal(v_myrec.key);
+        execute v_sqlstr;
+    end loop;
+
+    return jsonb_build_object(
+        'success', true,
+        'message', 'ok',
+        'data',''
+    );
+
+end;
+$$ language 'plpgsql';
 
