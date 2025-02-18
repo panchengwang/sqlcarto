@@ -348,6 +348,42 @@ end;
 $$ language 'plpgsql';
 
 
+
+
+
+create or replace function sc_user_get_configurations(v_userid varchar, v_keys varchar[]) returns jsonb as 
+$$
+declare
+    v_invalsclause text;
+    v_sqlstr text;
+    v_result_obj jsonb;
+	v_myrec record;
+begin
+    select 
+        string_agg(quote_literal(unnest),',') into v_invalsclause
+    from
+        unnest(v_keys) ; 
+    
+    v_sqlstr := '
+        select 
+            jsonb_build_object(key_name, key_value) as kv
+        from 
+			sc_configuration_' || v_userid || ' 
+		where 
+			key_name in (
+                ' || v_invalsclause || '
+        	)
+        order by key_name
+        ';
+	v_result_obj := jsonb_build_object();
+    for v_myrec in execute v_sqlstr loop
+        v_result_obj := v_result_obj || v_myrec.kv;
+    end loop;
+
+    return v_result_obj;
+end;
+$$ language 'plpgsql';
+
 --  request:
 --      {
 --          "type": "USER_LOAD_WEB_MAP_KEYS",
@@ -366,7 +402,8 @@ $$ language 'plpgsql';
 --                  "gaode_key": "",
 --                  "google_key": "",
 --                  "tianditu_key": "",
---                  "gaode_password": ""
+--                  "gaode_password": "",
+--                  "qq_key":"",
 --              }
 --          }
 --      }
@@ -409,26 +446,37 @@ begin
     end if;
 
     update sc_users set token_gen_time = now() where id = v_userid;
-    v_sqlstr := '
-        select 
-            jsonb_build_object(key_name, key_value) as kv
-        from 
-			sc_configuration_' || v_userid || ' 
-		where 
-			key_name in (
-	            ' || quote_literal('google_key') || ',
-	            ' || quote_literal('bing_key') || ',
-	            ' || quote_literal('tianditu_key') || ',
-	            ' || quote_literal('gaode_key') || ',
-	            ' || quote_literal('gaode_password') || '
-        	)
-        order by key_name
-        ';
-    v_result_obj := jsonb_build_object();
-    for v_myrec in execute v_sqlstr loop
-        v_result_obj := v_result_obj || v_myrec.kv;
-    end loop;
+    -- v_sqlstr := '
+    --     select 
+    --         jsonb_build_object(key_name, key_value) as kv
+    --     from 
+	-- 		sc_configuration_' || v_userid || ' 
+	-- 	where 
+	-- 		key_name in (
+	--             ' || quote_literal('google_key') || ',
+	--             ' || quote_literal('bing_key') || ',
+	--             ' || quote_literal('tianditu_key') || ',
+	--             ' || quote_literal('gaode_key') || ',
+	--             ' || quote_literal('gaode_password') || '
+    --     	)
+    --     order by key_name
+    --     ';
+    -- v_result_obj := jsonb_build_object();
+    -- for v_myrec in execute v_sqlstr loop
+    --     v_result_obj := v_result_obj || v_myrec.kv;
+    -- end loop;
 
+    v_result_obj := sc_user_get_configurations(
+        v_userid,
+        array[
+            'qq_key',
+            'gaode_key',
+            'gaode_password',
+            'bing_key',
+            'tianditu_key',
+            'google_key'
+        ]
+    );
     return jsonb_build_object(
         'success', true,
         'message', 'ok',
@@ -480,14 +528,15 @@ $$ language 'plpgsql';
 --          "type": "USER_SAVE_WEB_MAP_KEYS",
 --          "data": {
 --              "username": "email/mobile",
---              "token": ""
-            --  "webmapkeys": {
-            --      "bing_key": "",
-            --      "gaode_key": "",
-            --      "google_key": "",
-            --      "tianditu_key": "",
-            --      "gaode_password": ""
-            --  }
+--              "token": "",
+--              "webmapkeys": {
+--                  "bing_key": "",
+--                  "gaode_key": "",
+--                  "google_key": "",
+--                  "tianditu_key": "",
+--                  "gaode_password": "",
+--                  "qq_key":""
+--              }
 --          }
 --      }
 --  resopnse:
