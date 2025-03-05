@@ -474,7 +474,8 @@ begin
             'gaode_password',
             'bing_key',
             'tianditu_key',
-            'google_key'
+            'google_key',
+            'qq_key'
         ]
     );
     return jsonb_build_object(

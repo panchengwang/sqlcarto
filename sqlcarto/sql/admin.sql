@@ -99,7 +99,8 @@ insert into sc_user_configuration(key_name,key_value) values
     ('bing_key',''),
     ('gaode_key',''),
     ('gaode_password',''),
-    ('tianditu_key','');
+    ('tianditu_key',''),
+    ('qq_key','');
 
 
 create or replace function sc_user_exist(username varchar) returns boolean as 
