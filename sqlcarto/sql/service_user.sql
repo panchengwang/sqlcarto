@@ -196,15 +196,24 @@ begin
 
     dblinksqlstr := '
         create table sc_catalog_' || userid || '(
-            id varchar(32) primary key,
+            id varchar(32) primary key default sc_uuid(),
             parent_id varchar(32) not null,
             name varchar(64) default ' || quote_literal('unnamed') || ',
-            layer_type integer default 0,
+            type integer default 0,
             srid integer default 0,
             create_time timestamp default NOW(),
             last_time timestamp default now()
         )
     ';
+    perform dblink_exec(dblinkid,dblinksqlstr);
+
+    dblinksqlstr := 'insert into sc_catalog_' || userid || '(
+        parent_id, name, type
+    ) values ( 
+        ' || quote_literal('0') || ',
+        ' || quote_literal('SQLCarto DB') || ',
+        0
+    )';
     perform dblink_exec(dblinkid,dblinksqlstr);
 
     dblinksqlstr := '
@@ -384,6 +393,15 @@ begin
 end;
 $$ language 'plpgsql';
 
+
+
+
+
+
+
+
+
+
 --  request:
 --      {
 --          "type": "USER_LOAD_WEB_MAP_KEYS",
@@ -514,7 +532,7 @@ begin
             'data',''
         );
     end if;
-
+    update sc_users A set token_gen_time = now() where A.user_name = v_username;
     return jsonb_build_object(
         'success',true,
         'message','ok',

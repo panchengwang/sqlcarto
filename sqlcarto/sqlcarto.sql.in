@@ -3117,7 +3117,8 @@ insert into sc_user_configuration(key_name,key_value) values
     ('bing_key',''),
     ('gaode_key',''),
     ('gaode_password',''),
-    ('tianditu_key','');
+    ('tianditu_key',''),
+    ('qq_key','');
 
 
 create or replace function sc_user_exist(username varchar) returns boolean as 
@@ -3196,18 +3197,20 @@ create table sc_layer_types(
 );
 
 insert into sc_layer_types(id,name) values
-    (0, 'UNKNONW'),
-    (1, 'TABLE'),
+    (-1, 'UNKNOWN'),
+    (0, 'ROOT'),
+    (1, 'FOLDER'),
     (2, 'GROUP'),
-    (3, 'POINT'),
-    (4, 'LINESTRING'),
-    (5, 'POLYGON'),
-    (6, 'MULTIPOINT'),
-    (7, 'MULTILINESTRING'),
-    (8, 'MULTIPOINT'),
-    (9, 'GEOMETRYCOLLECTION'),
-    (10, 'TRIANGLE'),
-    (11, 'NET');
+    (3, 'TABLE'),
+    (4, 'POINT'),
+    (5, 'LINESTRING'),
+    (6, 'POLYGON'),
+    (7, 'MULTIPOINT'),
+    (8, 'MULTILINESTRING'),
+    (9, 'MULTIPOINT'),
+    (10, 'GEOMETRYCOLLECTION'),
+    (11, 'TRIANGLE'),
+    (12, 'NET');
 
 
 create table sc_catalog(
@@ -3495,15 +3498,24 @@ begin
 
     dblinksqlstr := '
         create table sc_catalog_' || userid || '(
-            id varchar(32) primary key,
+            id varchar(32) primary key default sc_uuid(),
             parent_id varchar(32) not null,
             name varchar(64) default ' || quote_literal('unnamed') || ',
-            layer_type integer default 0,
+            type integer default 0,
             srid integer default 0,
             create_time timestamp default NOW(),
             last_time timestamp default now()
         )
     ';
+    perform dblink_exec(dblinkid,dblinksqlstr);
+
+    dblinksqlstr := 'insert into sc_catalog_' || userid || '(
+        parent_id, name, type
+    ) values ( 
+        ' || quote_literal('0') || ',
+        ' || quote_literal('SQLCarto DB') || ',
+        0
+    )';
     perform dblink_exec(dblinkid,dblinksqlstr);
 
     dblinksqlstr := '
@@ -3648,11 +3660,71 @@ $$ language 'plpgsql';
 
 
 
+
+
+create or replace function sc_user_get_configurations(v_userid varchar, v_keys varchar[]) returns jsonb as 
+$$
+declare
+    v_invalsclause text;
+    v_sqlstr text;
+    v_result_obj jsonb;
+	v_myrec record;
+begin
+    select 
+        string_agg(quote_literal(unnest),',') into v_invalsclause
+    from
+        unnest(v_keys) ; 
+    
+    v_sqlstr := '
+        select 
+            jsonb_build_object(key_name, key_value) as kv
+        from 
+			sc_configuration_' || v_userid || ' 
+		where 
+			key_name in (
+                ' || v_invalsclause || '
+        	)
+        order by key_name
+        ';
+	v_result_obj := jsonb_build_object();
+    for v_myrec in execute v_sqlstr loop
+        v_result_obj := v_result_obj || v_myrec.kv;
+    end loop;
+
+    return v_result_obj;
+end;
+$$ language 'plpgsql';
+
+
+
+
+
+
+
+
+
+
+--  request:
 --      {
 --          "type": "USER_LOAD_WEB_MAP_KEYS",
 --          "data": {
 --              "username": "email/mobile",
 --              "token": ""
+--          }
+--      }
+--  resopnse:
+--      {
+--          "success": true,
+--          "message": "ok",
+--          "data": {
+--              "webmapkeys": {
+--                  "bing_key": "",
+--                  "gaode_key": "",
+--                  "google_key": "",
+--                  "tianditu_key": "",
+--                  "gaode_password": "",
+--                  "qq_key":"",
+--              }
 --          }
 --      }
 delete from sc_services where request_type = 'USER_LOAD_WEB_MAP_KEYS';
@@ -3694,25 +3766,38 @@ begin
     end if;
 
     update sc_users set token_gen_time = now() where id = v_userid;
-    v_sqlstr := '
-        select 
-            jsonb_build_object(key_name, key_value) as kv
-        from 
-			sc_configuration_' || v_userid || ' 
-		where 
-			key_name in (
-	            ' || quote_literal('google_key') || ',
-	            ' || quote_literal('bing_key') || ',
-	            ' || quote_literal('tianditu_key') || ',
-	            ' || quote_literal('gaode_key') || ',
-	            ' || quote_literal('gaode_password') || '
-        	)
-        ';
-    v_result_obj := jsonb_build_object();
-    for v_myrec in execute v_sqlstr loop
-        v_result_obj := v_result_obj || v_myrec.kv;
-    end loop;
+    -- v_sqlstr := '
+    --     select 
+    --         jsonb_build_object(key_name, key_value) as kv
+    --     from 
+	-- 		sc_configuration_' || v_userid || ' 
+	-- 	where 
+	-- 		key_name in (
+	--             ' || quote_literal('google_key') || ',
+	--             ' || quote_literal('bing_key') || ',
+	--             ' || quote_literal('tianditu_key') || ',
+	--             ' || quote_literal('gaode_key') || ',
+	--             ' || quote_literal('gaode_password') || '
+    --     	)
+    --     order by key_name
+    --     ';
+    -- v_result_obj := jsonb_build_object();
+    -- for v_myrec in execute v_sqlstr loop
+    --     v_result_obj := v_result_obj || v_myrec.kv;
+    -- end loop;
 
+    v_result_obj := sc_user_get_configurations(
+        v_userid,
+        array[
+            'qq_key',
+            'gaode_key',
+            'gaode_password',
+            'bing_key',
+            'tianditu_key',
+            'google_key',
+            'qq_key'
+        ]
+    );
     return jsonb_build_object(
         'success', true,
         'message', 'ok',
@@ -3725,4 +3810,192 @@ end;
 $$ language 'plpgsql';
 
 
+
+create or replace function sc_user_check_token(v_username varchar, v_token varchar ) returns jsonb as 
+$$
+declare
+    v_result boolean;
+begin
+    v_result := true;
+    select count(1) = 1 into v_result from sc_users where user_name = v_username and token = v_token;
+
+    if not v_result then 
+        return jsonb_build_object(
+            'success', false,
+            'message', 'Invalid token!',
+            'data',''
+        );
+    end if;
+
+    if sc_token_is_expired(v_token) then 
+        return  jsonb_build_object(
+            'success', false,
+            'message', 'Token is expired!',
+            'data',''
+        );
+    end if;
+    update sc_users A set token_gen_time = now() where A.user_name = v_username;
+    return jsonb_build_object(
+        'success',true,
+        'message','ok',
+        'data',''
+    );
+end;
+$$ language 'plpgsql';
+
+
+--  request:
+--      {
+--          "type": "USER_SAVE_WEB_MAP_KEYS",
+--          "data": {
+--              "username": "email/mobile",
+--              "token": "",
+--              "webmapkeys": {
+--                  "bing_key": "",
+--                  "gaode_key": "",
+--                  "google_key": "",
+--                  "tianditu_key": "",
+--                  "gaode_password": "",
+--                  "qq_key":""
+--              }
+--          }
+--      }
+--  resopnse:
+--      {
+--          "success": true,
+--          "message": "ok",
+--          "data": ""
+--      }
+delete from sc_services where request_type = 'USER_SAVE_WEB_MAP_KEYS';
+insert into sc_services(request_type, function_name) values('USER_SAVE_WEB_MAP_KEYS','sc_user_save_web_map_keys');
+create or replace function sc_user_save_web_map_keys(request jsonb) returns jsonb as 
+$$
+declare
+    v_sqlstr text;
+    v_userid varchar;
+    v_username varchar;
+    v_password varchar;
+    v_token varchar;
+    v_nodeconnstr varchar;
+	v_result boolean;
+    v_result_obj jsonb;
+    v_nodeurl varchar;
+	v_dblinkid varchar;
+    v_myrec record;
+begin
+    v_username := request->'data'->>'username';
+    v_token := request->'data'->>'token';
+    v_userid := sc_user_get_id_by_name(v_username);
+    
+    v_result_obj := sc_user_check_token(v_username, v_token);
+    if not (v_result_obj->>'success')::boolean then 
+        return v_result_obj;
+    end if;
+
+    update sc_users set token_gen_time = now() where id = v_userid;
+
+    v_sqlstr := 'select key, value from  jsonb_each(' || quote_literal(request->'data'->>'webmapkeys') || '::jsonb)' ;
+    for v_myrec in execute v_sqlstr loop
+        v_sqlstr := 'update sc_configuration_' || v_userid || ' set key_value = ' || quote_literal(request->'data'->'webmapkeys'->>(v_myrec.key)) || '  where key_name = ' || quote_literal(v_myrec.key);
+        execute v_sqlstr;
+    end loop;
+
+    return jsonb_build_object(
+        'success', true,
+        'message', 'ok',
+        'data',''
+    );
+
+end;
+$$ language 'plpgsql';
+
+
+
+
+create or replace function sc_catalog_get_children(v_userid varchar, v_parent_id varchar) returns jsonb as 
+$$
+declare
+    v_sqlstr text;
+    v_myrec record;
+    v_children jsonb;
+    v_child jsonb;
+begin
+    v_children := jsonb_build_array();
+    v_sqlstr := '
+        select 
+            A.id, A.parent_id, A.name, A.type as type_id,  B.name as type 
+        from 
+            ' || quote_ident('sc_catalog_' || v_userid) || ' A , 
+            sc_layer_types B 
+        where 
+            A.type = B.id
+			and
+			A.parent_id = ' || quote_literal(v_parent_id) || '
+    '; 
+	for v_myrec in execute v_sqlstr loop 
+        if v_myrec.type_id = 0 or v_myrec.type_id = 1 or v_myrec.type_id = 2 then 
+            v_child := jsonb_build_object(
+                'id', v_myrec.id,
+                'parent_id',v_myrec.parent_id,
+                'name', v_myrec.name,
+                'layer_type', v_myrec.type,
+                'children',sc_catalog_get_children(v_userid, v_myrec.id)
+            );
+        else 
+            v_child := jsonb_build_object(
+                'id', v_myrec.id,
+                'parent_id',v_myrec.parent_id,
+                'name', v_myrec.name,
+                'layer_type', v_myrec.type
+            );
+        end if;
+        v_children := v_children || v_child;
+    end loop;
+    return v_children;
+end;
+$$ language 'plpgsql';
+
+
+
+
+--      {
+--          "type": "CATALOG_GET_CHILDREN",
+--          "data": {
+--              "username": "email/mobile",
+--              "token": "",
+--              "parent_id": "0"
+--          }
+--      }
+
+delete from sc_services where request_type = 'CATALOG_GET_CHILDREN';
+insert into sc_services(request_type, function_name) values('CATALOG_GET_CHILDREN','sc_catalog_get_children');
+create or replace function sc_catalog_get_children(request jsonb) returns jsonb as 
+$$
+declare
+    v_result_obj jsonb;
+    v_username varchar;
+    v_token varchar;
+    v_parent_id varchar;
+    v_children jsonb;
+begin
+    v_username := request->'data'->>'username';
+    v_token := request->'data'->>'token';
+    v_result_obj := sc_user_check_token(v_username, v_token);
+    if not (v_result_obj->>'success')::boolean then 
+        return v_result_obj;
+    end if;
+    v_parent_id := request->'data'->>'parent_id';
+    if v_parent_id is null then 
+        v_parent_id := '0';
+    end if;
+    v_children := sc_catalog_get_children(sc_user_get_id_by_name(v_username), v_parent_id);
+    return jsonb_build_object(
+        'success', true,
+        'message', 'ok',
+        'data', jsonb_build_object(
+            'children', v_children
+        )
+    );
+end;
+$$ language 'plpgsql';
 

@@ -179,18 +179,20 @@ create table sc_layer_types(
 );
 
 insert into sc_layer_types(id,name) values
-    (0, 'UNKNONW'),
-    (1, 'TABLE'),
+    (-1, 'UNKNOWN'),
+    (0, 'ROOT'),
+    (1, 'FOLDER'),
     (2, 'GROUP'),
-    (3, 'POINT'),
-    (4, 'LINESTRING'),
-    (5, 'POLYGON'),
-    (6, 'MULTIPOINT'),
-    (7, 'MULTILINESTRING'),
-    (8, 'MULTIPOINT'),
-    (9, 'GEOMETRYCOLLECTION'),
-    (10, 'TRIANGLE'),
-    (11, 'NET');
+    (3, 'TABLE'),
+    (4, 'POINT'),
+    (5, 'LINESTRING'),
+    (6, 'POLYGON'),
+    (7, 'MULTIPOINT'),
+    (8, 'MULTILINESTRING'),
+    (9, 'MULTIPOINT'),
+    (10, 'GEOMETRYCOLLECTION'),
+    (11, 'TRIANGLE'),
+    (12, 'NET');
 
 
 create table sc_catalog(
