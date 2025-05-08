@@ -202,7 +202,8 @@ begin
             type integer default 0,
             srid integer default 0,
             create_time timestamp default NOW(),
-            last_time timestamp default now()
+            last_time timestamp default now(),
+            unique (parent_id, name)
         )
     ';
     perform dblink_exec(dblinkid,dblinksqlstr);
