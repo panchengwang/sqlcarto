@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${default}",
+                "D:/msys64/ucrt64/include/c++/14.1.0/x86_64-w64-mingw32",
+                "D:/msys64/ucrt64/include/cairo",
+                "D:/msys64/usr/local/pgsql/include/mapsymbol_c",
+                ".",
+                "D:/software/sdb/postgresql-16.0/src/include",
+                "${workspaceFolder}/sqlcarto",
+                "D:/software/sdb/postgresql-16.0/src/include/port/win32",
+                "E:/postgis-3.4.2"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.22621.0",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}

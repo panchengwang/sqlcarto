@@ -1,0 +1,6 @@
+# sqlcarto extension
+comment = 'A map renderer engine embed in postgresql'
+default_version = '0.1'
+module_pathname = '$libdir/sqlcarto'
+relocatable = true
+trusted = true

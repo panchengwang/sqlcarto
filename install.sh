@@ -1,40 +1,19 @@
 #!/bin/sh
+
 CUR_DIR=$(cd `dirname $0`; pwd)
+PG_SRC_DIR=~/software/sdb/postgresql-17.0
+POSTGIS_SRC_DIR=~/software/sdb/postgis-3.5.3
 
-sh ${CUR_DIR}/sqlcarto/combine_sql.sh
-POSTGIS_SRC_PATH=~/software/sdb/postgis-3.4.2
+sh combine_sql.sh
 
-# 开发时，为提高编译安装效率，注释以下三行
-cd ${POSTGIS_SRC_PATH}/../
-rm ${POSTGIS_SRC_PATH} -rf
-tar -zvxf ${POSTGIS_SRC_PATH}.tar.gz
-
-cd ${CUR_DIR}
-cp -rf -u * ${POSTGIS_SRC_PATH}
-
-cd ${POSTGIS_SRC_PATH}
-sh patch.sh
-
-# 开发时，为提高编译安装效率，注释以下一行
-./configure --prefix=${PGSQL} --without-protobuf
-
-# make
-make -j 32
-
-# 下面5行仅仅在开发时使用
-# cd ${POSTGIS_SRC_PATH}/extensions/postgis_sqlcarto
-# make uninstall
-# make clean
-# make 
-# make install
+echo "POSTGIS_SRC_DIR=${POSTGIS_SRC_DIR}" > ${CUR_DIR}/Makefile
+cat ${CUR_DIR}/Makefile.in >> ${CUR_DIR}/Makefile
 
 
-cd ${POSTGIS_SRC_PATH}
-
-os=$(uname | cut -c 1-5)
-
-if [ "$os" = "MINGW" ] ; then 
-make install
-else
+cp ${CUR_DIR} ${PG_SRC_DIR}/contrib -r
+cd ${PG_SRC_DIR}/contrib/sqlcarto
+make 
 sudo make install
-fi
+
+
+
