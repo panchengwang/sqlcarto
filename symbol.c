@@ -1,5 +1,5 @@
 // #include <sqlcarto.h>
-#include "symbol_inout.h"
+#include "symbol.h"
 
 #include <mapengine_c.h>
 
@@ -103,7 +103,7 @@ Datum sc_symbol_as_image(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	hSym = sym_set_dots_per_mm(hSym, dotsPerMM);
+	hSym = sym_set_dotspermm(hSym, dotsPerMM);
 	buf = sym_to_image(hSym, &len);
 
 	ret = (bytea*)palloc(VARHDRSZ + len);

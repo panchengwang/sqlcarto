@@ -14,7 +14,7 @@
 #include "fmgr.h"
 #include "utils/elog.h"
 #include "utils/geo_decls.h"
-
+#include "funcapi.h"
 #include "lwgeom_pg.h"
 #include "liblwgeom.h"
 #include "liblwgeom_internal.h"

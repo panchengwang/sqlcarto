@@ -1783,3 +1783,493 @@ insert into symbol_sys(english, chinese, sym) values('text','circle','
 }
 ');
 
+insert into symbol_sys(english, chinese, sym) values('text','circle','
+{
+  "width": 100.0,
+  "height": 100.0,
+  "dotspermm": 3.7795275590551185,
+  "shapes": [
+    {
+      "type": "circle",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 0]
+      },
+      "center": [0.0, 0.0],
+      "radius": 0.8
+    },
+    {
+      "type": "text",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 0.2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 0, 0, 255]
+      },
+      "text": "〇",
+      "center": [0.0, 0.0],
+      "fontsize": 0.7,
+      "rotation": 0,
+      "fontname": "Noto Sans CJK SC",
+      "outlined": true,
+      "outlinedwidth": 0.2,
+      "slant": "normal",
+      "weight": "normal"
+    }
+  ]
+}
+');
+
+insert into symbol_sys(english, chinese, sym) values('text','circle','
+{
+  "width": 100.0,
+  "height": 100.0,
+  "dotspermm": 3.7795275590551185,
+  "shapes": [
+    {
+      "type": "circle",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 0]
+      },
+      "center": [0.0, 0.0],
+      "radius": 0.8
+    },
+    {
+      "type": "text",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 0.2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 0, 0, 255]
+      },
+      "text": "1",
+      "center": [0.0, 0.0],
+      "fontsize": 0.7,
+      "rotation": 0,
+      "fontname": "Noto Sans CJK SC",
+      "outlined": true,
+      "outlinedwidth": 0.2,
+      "slant": "normal",
+      "weight": "normal"
+    }
+  ]
+}
+');
+
+insert into symbol_sys(english, chinese, sym) values('text','circle','
+{
+  "width": 100.0,
+  "height": 100.0,
+  "dotspermm": 3.7795275590551185,
+  "shapes": [
+    {
+      "type": "circle",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 0]
+      },
+      "center": [0.0, 0.0],
+      "radius": 0.8
+    },
+    {
+      "type": "text",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 0.2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 0, 0, 255]
+      },
+      "text": "七",
+      "center": [0.0, 0.0],
+      "fontsize": 0.7,
+      "rotation": 0,
+      "fontname": "Noto Sans CJK SC",
+      "outlined": true,
+      "outlinedwidth": 0.2,
+      "slant": "normal",
+      "weight": "normal"
+    }
+  ]
+}
+');
+
+insert into symbol_sys(english, chinese, sym) values('text','circle','
+{
+  "width": 100.0,
+  "height": 100.0,
+  "dotspermm": 3.7795275590551185,
+  "shapes": [
+    {
+      "type": "circle",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 0]
+      },
+      "center": [0.0, 0.0],
+      "radius": 0.8
+    },
+    {
+      "type": "text",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 0.2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 0, 0, 255]
+      },
+      "text": "三",
+      "center": [0.0, 0.0],
+      "fontsize": 0.7,
+      "rotation": 0,
+      "fontname": "Noto Sans CJK SC",
+      "outlined": true,
+      "outlinedwidth": 0.2,
+      "slant": "normal",
+      "weight": "normal"
+    }
+  ]
+}
+');
+
+insert into symbol_sys(english, chinese, sym) values('text','circle','
+{
+  "width": 100.0,
+  "height": 100.0,
+  "dotspermm": 3.7795275590551185,
+  "shapes": [
+    {
+      "type": "circle",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 0]
+      },
+      "center": [0.0, 0.0],
+      "radius": 0.8
+    },
+    {
+      "type": "text",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 0.2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 0, 0, 255]
+      },
+      "text": "九",
+      "center": [0.0, 0.0],
+      "fontsize": 0.7,
+      "rotation": 0,
+      "fontname": "Noto Sans CJK SC",
+      "outlined": true,
+      "outlinedwidth": 0.2,
+      "slant": "normal",
+      "weight": "normal"
+    }
+  ]
+}
+');
+
+insert into symbol_sys(english, chinese, sym) values('text','circle','
+{
+  "width": 100.0,
+  "height": 100.0,
+  "dotspermm": 3.7795275590551185,
+  "shapes": [
+    {
+      "type": "circle",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 0]
+      },
+      "center": [0.0, 0.0],
+      "radius": 0.8
+    },
+    {
+      "type": "text",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 0.2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 0, 0, 255]
+      },
+      "text": "二",
+      "center": [0.0, 0.0],
+      "fontsize": 0.7,
+      "rotation": 0,
+      "fontname": "Noto Sans CJK SC",
+      "outlined": true,
+      "outlinedwidth": 0.2,
+      "slant": "normal",
+      "weight": "normal"
+    }
+  ]
+}
+');
+
+insert into symbol_sys(english, chinese, sym) values('text','circle','
+{
+  "width": 100.0,
+  "height": 100.0,
+  "dotspermm": 3.7795275590551185,
+  "shapes": [
+    {
+      "type": "circle",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 0]
+      },
+      "center": [0.0, 0.0],
+      "radius": 0.8
+    },
+    {
+      "type": "text",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 0.2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 0, 0, 255]
+      },
+      "text": "五",
+      "center": [0.0, 0.0],
+      "fontsize": 0.7,
+      "rotation": 0,
+      "fontname": "Noto Sans CJK SC",
+      "outlined": true,
+      "outlinedwidth": 0.2,
+      "slant": "normal",
+      "weight": "normal"
+    }
+  ]
+}
+');
+
+insert into symbol_sys(english, chinese, sym) values('text','circle','
+{
+  "width": 100.0,
+  "height": 100.0,
+  "dotspermm": 3.7795275590551185,
+  "shapes": [
+    {
+      "type": "circle",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 0]
+      },
+      "center": [0.0, 0.0],
+      "radius": 0.8
+    },
+    {
+      "type": "text",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 0.2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 0, 0, 255]
+      },
+      "text": "八",
+      "center": [0.0, 0.0],
+      "fontsize": 0.7,
+      "rotation": 0,
+      "fontname": "Noto Sans CJK SC",
+      "outlined": true,
+      "outlinedwidth": 0.2,
+      "slant": "normal",
+      "weight": "normal"
+    }
+  ]
+}
+');
+
+insert into symbol_sys(english, chinese, sym) values('text','circle','
+{
+  "width": 100.0,
+  "height": 100.0,
+  "dotspermm": 3.7795275590551185,
+  "shapes": [
+    {
+      "type": "circle",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 0]
+      },
+      "center": [0.0, 0.0],
+      "radius": 0.8
+    },
+    {
+      "type": "text",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 0.2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 0, 0, 255]
+      },
+      "text": "六",
+      "center": [0.0, 0.0],
+      "fontsize": 0.7,
+      "rotation": 0,
+      "fontname": "Noto Sans CJK SC",
+      "outlined": true,
+      "outlinedwidth": 0.2,
+      "slant": "normal",
+      "weight": "normal"
+    }
+  ]
+}
+');
+
+insert into symbol_sys(english, chinese, sym) values('text','circle','
+{
+  "width": 100.0,
+  "height": 100.0,
+  "dotspermm": 3.7795275590551185,
+  "shapes": [
+    {
+      "type": "circle",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 0]
+      },
+      "center": [0.0, 0.0],
+      "radius": 0.8
+    },
+    {
+      "type": "text",
+      "stroke": {
+        "color": [0, 0, 0, 255],
+        "width": 0.2,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [2, 0]
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 0, 0, 255]
+      },
+      "text": "四",
+      "center": [0.0, 0.0],
+      "fontsize": 0.7,
+      "rotation": 0,
+      "fontname": "Noto Sans CJK SC",
+      "outlined": true,
+      "outlinedwidth": 0.2,
+      "slant": "normal",
+      "weight": "normal"
+    }
+  ]
+}
+');
+

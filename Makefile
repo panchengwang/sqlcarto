@@ -8,7 +8,7 @@ OBJS = \
 	china_proj.o \
 	canvas.o \
 	email.o \
-	symbol_inout.o \
+	symbol.o \
 	sqlcarto.o
 
 EXTENSION = sqlcarto

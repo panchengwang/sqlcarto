@@ -9,8 +9,8 @@ sh combine_sql.sh
 echo "POSTGIS_SRC_DIR=${POSTGIS_SRC_DIR}" > ${CUR_DIR}/Makefile
 cat ${CUR_DIR}/Makefile.in >> ${CUR_DIR}/Makefile
 
-
-cp ${CUR_DIR} ${PG_SRC_DIR}/contrib -r
+rsync -av --exclude='.*' ${CUR_DIR} ${PG_SRC_DIR}/contrib
+# cp ${CUR_DIR} ${PG_SRC_DIR}/contrib -r
 cd ${PG_SRC_DIR}/contrib/sqlcarto
 make 
 sudo make install
