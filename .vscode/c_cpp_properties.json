@@ -8,9 +8,10 @@
         "${default}",
         "${workspaceFolder}",
         "/usr/include",
+        "/usr/local/include",
+        "/usr/local/include/mapengine_c",
         "/usr/include/x86_64-linux-gnu/",
         "/usr/local/pgsql/include",
-        "/usr/local/pgsql/include/mapengine_c",
         "~/software/sdb/postgis-3.5.3/libpgcommon",
         "~/software/sdb/postgis-3.5.3/liblwgeom",
         "~/software/sdb/postgresql-17.0/src/include"

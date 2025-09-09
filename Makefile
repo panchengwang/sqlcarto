@@ -12,7 +12,7 @@ OBJS = \
 	sqlcarto.o
 
 EXTENSION = sqlcarto
-DATA = sqlcarto.sql
+DATA = sqlcarto--0.1.sql
 PGFILEDESC = ""
 
 REGRESS = 

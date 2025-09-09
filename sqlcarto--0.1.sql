@@ -1,3 +1,259 @@
+---------------------------------------------------------------------------
+--
+-- SQLCarto - 
+-- Authors:
+--      Pancheng Wang           sqlcarto@163.com
+---------------------------------------------------------------------------
+
+--
+-- 
+--
+
+-- #include "../postgis/sqldefines.h"
+
+-- INSTALL VERSION: POSTGIS_LIB_VERSION
+
+
+--  Function    :   sqlcarto_info
+--  Parameter   :  
+--  Result      :   The basic infomartion of sqlcarto: version, authors and contact ways.  
+create or replace function sqlcarto_info() returns json as 
+$$
+  select '{
+      "extension" : "SQLCarto",
+      "version" : "1.0",
+      "authors" : ["pcwang","Pancheng Wang","wang_wang_lao","麓山老将"],
+      "email": "sqlcarto@163.com"
+    }'::json;
+$$
+language 'sql';
+
+
+
+
+--  Function    :   sqlcarto_version
+--  Parameter   :  
+--  Result      :   Same as sqlcarto_info.  
+create or replace function sqlcarto_version() returns json as 
+$$
+  select sqlcarto_info();
+$$
+language 'sql';
+
+
+
+
+--  Function    :   sqlcarto_version
+--                  Get rid of character "-" of a uuid.
+--  Parameter   :  
+--  Result      :   A uuid like string which is remove character "-" of the uuid.  
+create or replace function sc_uuid() returns text as
+$$
+  select replace(gen_random_uuid()::text,'-','');
+$$
+language 'sql';
+
+
+
+
+
+-- Sqlcarto configuration table 
+create table sc_configuration(
+    key_name varchar primary key,
+    key_value varchar default '',
+    description varchar default '' not null
+);
+insert into sc_configuration(key_name,key_value, description)
+values
+    ('EMAIL_USER','','email of sender'),
+    ('EMAIL_PASSWORD','','email password'),
+    ('EMAIL_SMTP','','smtp server');
+
+
+
+
+
+--  Function    :   sc_get_configuration
+--                  Get configuration of a key.
+--  Parameter   :  
+--                  keyname     
+--  Result      :   Configuration of a key. 
+create or replace function sc_get_configuration(kename varchar) returns varchar as
+$$
+    select key_value from sc_configuration where key_name = $1;
+$$ language 'sql';
+
+
+
+
+--  Function    :   sc_generate_random_string
+--                  Create a random string which character must be contained in some special character set.
+--                  The len of the random string is specified by len.
+--  Parameter   :  
+--                  seedstr     The character set used to generate a random string.
+--                  len         Length of random string.      
+--  Result      :   A random string 
+create or replace function sc_generate_random_string(seedstr varchar, len integer)
+returns varchar as
+$$
+    select array_to_string(
+        array(
+            select 
+                substring(
+                    $1 
+                    FROM 
+                    (ceil(random()*length($1)))::int 
+                    FOR 1
+                ) 
+            FROM 
+             generate_series(1, $2)
+        ), ''
+    );
+$$
+language 'sql';
+
+
+
+--  Function    :   sc_generate_code
+--                  Create a random string which character must be contained in alphabetical set (ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789).
+--                  The length of the random string is specified by len.
+--  Parameter   :  
+--                  len         Length of random string.      
+--  Result      :   A random string 
+create or replace function sc_generate_code(len integer) returns varchar as 
+$$
+    select sc_generate_random_string(
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+        $1
+    );
+$$ language sql;
+
+
+
+--  Function    :   sc_generate_token
+--                  Create a random string to be used as a token.
+--  Parameter   :  
+--                  len         Length of code, which must be greater than 32.      
+--  Result      :   The conbination of a random string and an uuid. 
+create or replace function sc_generate_token(len integer) returns varchar as
+$$
+    select sc_generate_random_string(
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',$1-32) || 
+        sc_uuid();
+$$ language 'sql';
+
+-- Send mail module
+
+-- Function     :  sc_send_mail
+-- Parameters   :   
+--      sender      email address of sender
+--      reciever    email address of reciver
+--      title       email title
+--      content     email content
+--      smtp        smtp server
+--      password    password of sender email
+--                  Notes: Sometimes the password is not the password to login the email.
+--                      For example, to send a email, 126,163 smtp server request a special password which is notified when the smtp email sending service was configured.
+create or replace function sc_send_mail(
+    sender varchar, 
+    reciever varchar, 
+    subject varchar, 
+    content text,
+    smtp varchar,
+    password varchar
+) 
+returns boolean 
+AS 'MODULE_PATHNAME','sc_send_mail'
+LANGUAGE C IMMUTABLE STRICT;
+
+
+-- 函数：sc_send_mail
+-- 参数:    reciever 接收者信箱
+--          title 邮件标题
+--          content 邮件内容
+create or replace function sc_send_mail(
+    reciever varchar, 
+    subject varchar, 
+    content text
+) 
+returns boolean AS 
+$$
+    select sc_send_mail(
+        sc_get_configuration('EMAIL_USER'),
+        $1,
+        $2,
+        $3,
+        sc_get_configuration('EMAIL_SMTP'),
+        sc_get_configuration('EMAIL_PASSWORD')
+    );
+$$ language 'sql';
+
+
+
+create or replace function sc_send_email(
+    sender varchar, 
+    reciever varchar, 
+    subject varchar, 
+    content text,
+    smtp varchar,
+    password varchar
+) 
+returns boolean AS
+$$
+    select sc_send_mail($1,$2,$3,$4,$5,$6);
+$$ LANGUAGE 'sql';
+
+
+create or replace function sc_send_email(
+    reciever varchar, 
+    subject varchar, 
+    content text
+) 
+returns boolean AS
+$$
+    select sc_send_mail($1,$2,$3);
+$$ LANGUAGE 'sql';
+
+
+
+CREATE OR REPLACE FUNCTION sc_symbol_in(cstring)
+	RETURNS symbol
+	AS 'MODULE_PATHNAME','SYMBOL_in'
+	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE OR REPLACE FUNCTION sc_symbol_out(symbol)
+	RETURNS cstring
+	AS 'MODULE_PATHNAME','SYMBOL_out'
+	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE TYPE symbol (
+	internallength = variable,
+	input = sc_symbol_in,
+	output = sc_symbol_out,
+	alignment = double,
+	storage = main
+);
+
+
+-- CREATE OR REPLACE FUNCTION sc_symbol_as_image(symbol,text,float8)
+-- 	RETURNS bytea
+-- 	AS 'MODULE_PATHNAME','sc_symbol_as_image'
+-- 	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE OR REPLACE FUNCTION sc_symbol_as_image(symbol,float8)
+	RETURNS bytea
+	AS 'MODULE_PATHNAME','sc_symbol_as_image'
+	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+
+
+-- CREATE OR REPLACE FUNCTION sc_symbol_as_image(symbol,text,float8,float8)
+-- 	RETURNS bytea
+-- 	AS 'MODULE_PATHNAME','sc_symbol_as_image_with_size'
+-- 	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+
   
 -- Availability: 3.4.2 
 -- 预定义好的地图符号postgres 

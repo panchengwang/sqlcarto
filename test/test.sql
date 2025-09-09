@@ -2,7 +2,7 @@
 create extension "uuid-ossp";
 create extension postgis;
 create extension postgis_sfcgal;
-create extension postgis_sqlcarto;
+create extension sqlcarto;
 
 -- SET client_encoding to 'utf8';
 -- select sqlcarto_info();

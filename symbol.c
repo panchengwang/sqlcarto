@@ -60,7 +60,7 @@ Datum SYMBOL_out(PG_FUNCTION_ARGS)
 	MAPSYMBOL_H hSym = NULL;
 	char* json_string = NULL;
 	char* buf;
-	size_t len = 0;
+	int32_t len = 0;
 
 	if (PG_ARGISNULL(0)) {
 		PG_RETURN_NULL();
@@ -73,7 +73,7 @@ Datum SYMBOL_out(PG_FUNCTION_ARGS)
 
 	buf = sym_to_json(hSym, &len);
 	if (len > 4096) {
-		elog(NOTICE, "symbol json string too long: %zu", len);
+		elog(NOTICE, "symbol json string too long: %d", len);
 		sym_destroy(hSym);
 		PG_RETURN_NULL();
 	}
@@ -104,7 +104,7 @@ Datum sc_symbol_as_image(PG_FUNCTION_ARGS)
 	}
 
 	hSym = sym_set_dotspermm(hSym, dotsPerMM);
-	buf = sym_to_image(hSym, &len);
+	buf = (unsigned char*)sym_to_image(hSym, &len);
 
 	ret = (bytea*)palloc(VARHDRSZ + len);
 	SET_VARSIZE(ret, len + VARHDRSZ);
