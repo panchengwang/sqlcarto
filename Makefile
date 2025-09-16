@@ -17,7 +17,10 @@ PGFILEDESC = ""
 
 REGRESS = 
 PG_CPPFLAGS += $(shell pkg-config --cflags mapengine_c) -I$(POSTGIS_SRC_DIR)/liblwgeom -I$(POSTGIS_SRC_DIR)/libpgcommon -I/usr/local/pgsql/include/mapengine_c
-SHLIB_LINK += $(shell pkg-config --libs mapengine_c) $(POSTGIS_SRC_DIR)/liblwgeom/.libs/liblwgeom.a $(POSTGIS_SRC_DIR)/libpgcommon/libpgcommon.a -lgeos_c -lproj
+# SHLIB_LINK += $(POSTGIS_SRC_DIR)/liblwgeom/.libs/liblwgeom.a $(POSTGIS_SRC_DIR)/libpgcommon/libpgcommon.a -lgeos_c -lproj
+# SHLIB_LINK += $(shell pkg-config --libs mapengine_c) -L$(shell pg_config --libdir) -llwgeom
+SHLIB_LINK +=  $(shell pkg-config --libs mapengine_c) -L$(PGSQL)/lib -lgeos_c -lproj -llwgeom
+
 
 ifdef USE_PGXS
 PG_CONFIG = pg_config

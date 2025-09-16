@@ -78,7 +78,8 @@
     "typeinfo": "cpp",
     "variant": "cpp",
     "ranges": "cpp",
-    "lwgeom_log.h": "c"
+    "lwgeom_log.h": "c",
+    "postgis.h": "c"
   },
   "C_Cpp.default.compilerPath": "/usr/bin/g++.exe"
 }

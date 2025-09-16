@@ -13,32 +13,21 @@ create table sqlcarto_symbols(
 
 insert into sqlcarto_symbols(english, chinese, sym) values('arc','arc','
 {
-  "width": 100.0,
-  "height": 100.0,
+  "width": 5.0,
+  "height": 5.0,
   "dotspermm": 3.7795275590551185,
   "shapes": [
     {
       "type": "arc",
       "stroke": {
-        "color": [
-          0,
-          0,
-          0,
-          255
-        ],
+        "color": [0, 0, 0, 255],
         "width": 1,
         "cap": "butt",
         "join": "miter",
-        "dashes": [
-          1,
-          0
-        ],
+        "dashes": [1, 0],
         "dashesoffset": 0
       },
-      "center": [
-        0,
-        0
-      ],
+      "center": [0, 0],
       "radiusx": 0.5,
       "radiusy": 0.5,
       "rotation": 0,
@@ -46,7 +35,8 @@ insert into sqlcarto_symbols(english, chinese, sym) values('arc','arc','
       "endangle": 180
     }
   ]
-}');
+}
+');
 
 insert into sqlcarto_symbols(english, chinese, sym) values('border','province','
 {
@@ -81,7 +71,6 @@ insert into sqlcarto_symbols(english, chinese, sym) values('border','province','
       ],
       "offsetalongline": 0
     },
-
     {
       "type": "linestring",
       "stroke": {
@@ -157,38 +146,23 @@ insert into sqlcarto_symbols(english, chinese, sym) values('circle','circle','
     {
       "type": "circle",
       "stroke": {
-        "color": [
-          255,
-          0,
-          255,
-          255
-        ],
+        "color": [255, 0, 255, 255],
         "width": 1,
         "cap": "butt",
         "join": "miter",
-        "dashes": [
-          1,
-          0
-        ],
+        "dashes": [1, 0],
         "dashesoffset": 0
       },
       "fill": {
         "type": "solid",
-        "color": [
-          255,
-          255,
-          255,
-          0
-        ]
+        "color": [255, 255, 255, 0]
       },
-      "center": [
-        0.0,
-        0.0
-      ],
+      "center": [0.0, 0.0],
       "radius": 0.8
     }
   ]
-}');
+}
+');
 
 insert into sqlcarto_symbols(english, chinese, sym) values('city','4','
 {

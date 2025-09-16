@@ -5,6 +5,8 @@
 **********************************************************************/
 
 #include "sqlcarto.h"
+#include "postgis.h"
+#include <geos_c.h>
 
 
 /*

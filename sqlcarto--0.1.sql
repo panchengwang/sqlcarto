@@ -269,32 +269,21 @@ create table sqlcarto_symbols(
 
 insert into sqlcarto_symbols(english, chinese, sym) values('arc','arc','
 {
-  "width": 100.0,
-  "height": 100.0,
+  "width": 5.0,
+  "height": 5.0,
   "dotspermm": 3.7795275590551185,
   "shapes": [
     {
       "type": "arc",
       "stroke": {
-        "color": [
-          0,
-          0,
-          0,
-          255
-        ],
+        "color": [0, 0, 0, 255],
         "width": 1,
         "cap": "butt",
         "join": "miter",
-        "dashes": [
-          1,
-          0
-        ],
+        "dashes": [1, 0],
         "dashesoffset": 0
       },
-      "center": [
-        0,
-        0
-      ],
+      "center": [0, 0],
       "radiusx": 0.5,
       "radiusy": 0.5,
       "rotation": 0,
@@ -302,7 +291,8 @@ insert into sqlcarto_symbols(english, chinese, sym) values('arc','arc','
       "endangle": 180
     }
   ]
-}');
+}
+');
 
 insert into sqlcarto_symbols(english, chinese, sym) values('border','province','
 {
@@ -337,7 +327,6 @@ insert into sqlcarto_symbols(english, chinese, sym) values('border','province','
       ],
       "offsetalongline": 0
     },
-
     {
       "type": "linestring",
       "stroke": {
@@ -413,38 +402,23 @@ insert into sqlcarto_symbols(english, chinese, sym) values('circle','circle','
     {
       "type": "circle",
       "stroke": {
-        "color": [
-          255,
-          0,
-          255,
-          255
-        ],
+        "color": [255, 0, 255, 255],
         "width": 1,
         "cap": "butt",
         "join": "miter",
-        "dashes": [
-          1,
-          0
-        ],
+        "dashes": [1, 0],
         "dashesoffset": 0
       },
       "fill": {
         "type": "solid",
-        "color": [
-          255,
-          255,
-          255,
-          0
-        ]
+        "color": [255, 255, 255, 0]
       },
-      "center": [
-        0.0,
-        0.0
-      ],
+      "center": [0.0, 0.0],
       "radius": 0.8
     }
   ]
-}');
+}
+');
 
 insert into sqlcarto_symbols(english, chinese, sym) values('city','4','
 {
@@ -3711,3 +3685,77 @@ insert into sqlcarto_symbols(english, chinese, sym) values('text','circle','
   ]
 }');
 
+create or replace function sc_canvas_create() 
+returns text 
+AS 'MODULE_PATHNAME','sc_canvas_create'
+LANGUAGE C IMMUTABLE STRICT;
+
+
+create or replace function sc_canvas_destroy(text) 
+returns text 
+AS 'MODULE_PATHNAME','sc_canvas_destroy'
+LANGUAGE C IMMUTABLE STRICT;
+
+
+create or replace function sc_canvas_begin(text)
+returns text 
+AS 'MODULE_PATHNAME','sc_canvas_begin'
+LANGUAGE C IMMUTABLE STRICT;
+
+
+create or replace function sc_canvas_end(text)
+returns text 
+AS 'MODULE_PATHNAME','sc_canvas_end'
+LANGUAGE C IMMUTABLE STRICT;
+
+
+create or replace function sc_canvas_set_size(text,float8,float8)
+returns text 
+AS 'MODULE_PATHNAME','sc_canvas_set_size'
+LANGUAGE C ;
+
+
+create or replace function sc_canvas_set_dotspermm(text,float8)
+returns text 
+AS 'MODULE_PATHNAME','sc_canvas_set_dotspermm'
+LANGUAGE C ;
+
+
+create or replace function sc_canvas_set_envelope(text,float8,float8,float8,float8)
+returns text 
+AS 'MODULE_PATHNAME','sc_canvas_set_envelope'
+LANGUAGE C ;
+
+
+create or replace function sc_canvas_draw_geometry(text, geometry,  symbol, symbol ) returns text 
+AS 'MODULE_PATHNAME','sc_canvas_draw_geometry'
+LANGUAGE C ;
+
+
+create or replace function sc_canvas_add_geometry(text, geometry) returns text 
+AS 'MODULE_PATHNAME','sc_canvas_add_geometry'
+LANGUAGE C  ;
+-- create or replace function sc_canvas_draw_geometry(canvas text,geo geometry,symbol,symbol) returns text as 
+-- $$
+-- declare
+--     v_ret text := '1';
+-- begin
+--     raise notice 'return : %',geo;
+--     return v_ret;
+-- end;
+-- $$ language 'plpgsql';
+
+create or replace function sc_canvas_draw_geometry(
+    text,
+    geometry
+) returns text 
+AS $$
+    select sc_canvas_draw_geometry($1, $2, NULL,NULL);
+$$
+LANGUAGE 'sql';
+
+
+create or replace function sc_canvas_as_png(text)
+returns bytea 
+AS 'MODULE_PATHNAME','sc_canvas_as_png'
+LANGUAGE C IMMUTABLE STRICT;

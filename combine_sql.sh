@@ -9,3 +9,4 @@ cat ${CUR_DIR}/sql/symbol.sql >>  ${CUR_DIR}/sqlcarto--${VERSION}.sql
 
 sh ${CUR_DIR}/sql/create_symbol_sys.sh > ${CUR_DIR}/sql/symbol_sys.sql
 cat ${CUR_DIR}/sql/symbol_sys.sql >>  ${CUR_DIR}/sqlcarto--${VERSION}.sql
+cat ${CUR_DIR}/sql/canvas.sql >>  ${CUR_DIR}/sqlcarto--${VERSION}.sql
