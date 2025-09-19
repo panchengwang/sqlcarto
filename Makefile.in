@@ -8,17 +8,27 @@ OBJS = \
 	canvas.o \
 	email.o \
 	symbol.o \
-	sqlcarto.o
+	sqlcarto.o \
+
+
+#	symbol/symbol_parser.o \
+#	symbol/fill.o \
+#	symbol/line.o \
+#	symbol/stroke.o
 
 EXTENSION = sqlcarto
 DATA = sqlcarto--0.1.sql
 PGFILEDESC = ""
 
 REGRESS = 
-PG_CPPFLAGS += $(shell pkg-config --cflags mapengine_c) -I$(POSTGIS_SRC_DIR)/liblwgeom -I$(POSTGIS_SRC_DIR)/libpgcommon -I/usr/local/pgsql/include/mapengine_c
+PG_CPPFLAGS += $(shell pkg-config --cflags mapengine_c) \
+	$(shell pkg-config --cflags json-c) \
+	-I$(POSTGIS_SRC_DIR)/liblwgeom -I$(POSTGIS_SRC_DIR)/libpgcommon -I/usr/local/pgsql/include/mapengine_c
 # SHLIB_LINK += $(POSTGIS_SRC_DIR)/liblwgeom/.libs/liblwgeom.a $(POSTGIS_SRC_DIR)/libpgcommon/libpgcommon.a -lgeos_c -lproj
 # SHLIB_LINK += $(shell pkg-config --libs mapengine_c) -L$(shell pg_config --libdir) -llwgeom
-SHLIB_LINK +=  $(shell pkg-config --libs mapengine_c) -L$(PGSQL)/lib -lgeos_c -lproj -llwgeom
+SHLIB_LINK +=  $(shell pkg-config --libs mapengine_c) \
+	$(shell pkg-config --libs json-c) \
+	-L$(PGSQL)/lib -lgeos_c -lproj -llwgeom
 
 
 ifdef USE_PGXS

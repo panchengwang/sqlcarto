@@ -1,0 +1,63 @@
+{
+  "width": 3,
+  "height": 3,
+  "dotspermm": 3.37,
+  "shapes": [
+    {
+      "type": "line",
+      "stroke": {
+        "color": [0, 255, 255, 255],
+        "width": 0.5,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [4, 0],
+        "dashesoffset": 0
+      }
+    },
+    {
+      "type": "fill",
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 127]
+      }
+    },
+    {
+      "type": "path",
+      "closed": false,
+      "stroke": {
+        "color": [0, 255, 255, 255],
+        "width": 0.5,
+        "cap": "butt",
+        "join": "miter",
+        "dashes": [4, 0],
+        "dashesoffset": 0
+      },
+      "fill": {
+        "type": "solid",
+        "color": [255, 255, 0, 127]
+      },
+      "subpaths": [
+        {
+          "type": "linestring",
+          "points": [
+            [-0.5, -0.5],
+            [0.5, -0.5],
+            [0.5, 0.5],
+            [-0.5, 0.5],
+            [-0.5, -0.5]
+          ]
+        },
+        {
+          "type": "polygon",
+          "points": [
+            [-0.25, -0.25],
+            [0.25, -0.25],
+            [0.25, 0.25],
+            [-0.25, 0.25],
+            [-0.25, -0.25]
+          ]
+        }
+      ]
+    }
+  ]
+}

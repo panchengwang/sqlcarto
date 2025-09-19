@@ -51,7 +51,7 @@ Datum sc_canvas_set_envelope(PG_FUNCTION_ARGS) {
 PG_FUNCTION_INFO_V1(sc_canvas_destroy);
 Datum sc_canvas_destroy(PG_FUNCTION_ARGS) {
     void* canvas = hex_to_address(PG_GETARG_TEXT_PP(0));
-    // map_canvas_destroy((MAPCANVAS_H)canvas);
+    map_canvas_destroy((MAPCANVAS_H)canvas);
     PG_RETURN_TEXT_P(PG_GETARG_TEXT_PP(0));
 }
 
@@ -76,10 +76,10 @@ PG_FUNCTION_INFO_V1(sc_canvas_draw_geometry);
 Datum sc_canvas_draw_geometry(PG_FUNCTION_ARGS) {
     void* canvas = hex_to_address(PG_GETARG_TEXT_PP(0));
     GSERIALIZED* geom;
-    initGEOS(lwpgnotice, lwgeom_geos_error);
+
     geom = PG_GETARG_GSERIALIZED_P(1);
     LWGEOM* lwgeom = lwgeom_from_gserialized(geom);
-
+    initGEOS(lwpgnotice, lwgeom_geos_error);
     GEOSGeometry* geos_geom = LWGEOM2GEOS(lwgeom, 0);
     map_canvas_draw_geometry((MAPCANVAS_H)canvas, geos_geom, NULL, NULL);
 
@@ -90,6 +90,7 @@ Datum sc_canvas_draw_geometry(PG_FUNCTION_ARGS) {
 
     GEOSGeom_destroy(geos_geom);
     lwgeom_free(lwgeom);
+    finishGEOS();
     PG_RETURN_TEXT_P(PG_GETARG_TEXT_PP(0));
 }
 

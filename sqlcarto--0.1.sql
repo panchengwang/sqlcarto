@@ -395,15 +395,15 @@ insert into sqlcarto_symbols(english, chinese, sym) values('chord','chord','
 
 insert into sqlcarto_symbols(english, chinese, sym) values('circle','circle','
 {
-  "width": 100.0,
-  "height": 100.0,
+  "width": 2.0,
+  "height": 2.0,
   "dotspermm": 3.7795275590551185,
   "shapes": [
     {
       "type": "circle",
       "stroke": {
         "color": [255, 0, 255, 255],
-        "width": 1,
+        "width": 0.2,
         "cap": "butt",
         "join": "miter",
         "dashes": [1, 0],
@@ -640,7 +640,7 @@ insert into sqlcarto_symbols(english, chinese, sym) values('fill','solid','
       "type": "systemfill",
       "fill": {
         "type": "solid",
-        "color": [255, 0, 0, 255]
+        "color": [255, 255, 0, 100]
       }
     }
   ]
@@ -801,8 +801,8 @@ insert into sqlcarto_symbols(english, chinese, sym) values('line','solid','
     {
       "type": "systemline",
       "stroke": {
-        "color": [0, 0, 0, 255],
-        "width": 0.1,
+        "color": [0, 255, 255, 255],
+        "width": 0.5,
         "cap": "butt",
         "join": "miter",
         "dashes": [2, 0],

@@ -72,16 +72,16 @@ Datum SYMBOL_out(PG_FUNCTION_ARGS)
 	}
 
 	buf = sym_to_json(hSym, &len);
-	if (len > 4096) {
-		elog(NOTICE, "symbol json string too long: %d", len);
-		sym_destroy(hSym);
-		PG_RETURN_NULL();
-	}
+	// if (len > 4096) {
+	// 	elog(NOTICE, "symbol json string too long: %d", len);
+	// 	sym_destroy(hSym);
+	// 	PG_RETURN_NULL();
+	// }
 	json_string = (char*)palloc(len + 1);
 	memcpy(json_string, buf, len);
 	json_string[len] = '\0';
 	free(buf);
-
+	sym_destroy(hSym);
 	PG_RETURN_CSTRING(json_string);
 }
 

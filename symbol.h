@@ -22,4 +22,10 @@ Datum SYMBOL_out(PG_FUNCTION_ARGS);
 Datum sc_symbol_as_image(PG_FUNCTION_ARGS);
 
 
+
+
+
+
+
+
 #endif

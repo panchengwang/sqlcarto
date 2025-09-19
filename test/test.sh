@@ -8,5 +8,6 @@ dropdb  $dbname
 createdb  $dbname
 psql  -d $dbname -f ${CUR_DIR}/test.sql
 psql -d $dbname -f ${CUR_DIR}/city.sql
+psql -d $dbname -f ${CUR_DIR}/county.sql
 # psql  -d $dbname -f ${CUR_DIR}/test_sym.sql
 psql -d $dbname -f ${CUR_DIR}/test_map.sql
