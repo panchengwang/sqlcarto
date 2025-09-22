@@ -6,11 +6,11 @@
 
 #define SYM_SUB_PATH_LINESTRING                 1
 #define SYM_SUB_PATH_POLYGON                    2
-#define SYM_SUB_PATH_ARC                        3
-#define SYM_SUB_PATH_PIE                        4
-#define SYM_SUB_PATH_CHORD                      5
-#define SYM_SUB_PATH_CIRCLE                     6
-#define SYM_SUB_PATH_ELLIPSE                    7
+#define SYM_SUB_PATH_CIRCLE                     3
+#define SYM_SUB_PATH_ELLIPSE                    4
+#define SYM_SUB_PATH_ARC                        5
+#define SYM_SUB_PATH_PIE                        6
+#define SYM_SUB_PATH_CHORD                      7
 #define SYM_SUB_PATH_RECTANGLE                  8
 #define SYM_SUB_PATH_ROUNDEDRECTANGLE           9
 #define SYM_SUB_PATH_REGULAR_POLYGON            10
@@ -85,20 +85,26 @@ typedef struct sym_sub_path_polygon_t {
     uint32_t npoints;
 }sym_sub_path_polygon_t;
 
+typedef struct sym_sub_path_circle_t {
+    uint8_t type;
+    sym_point_t center;
+    double radius;
+}sym_sub_path_circle_t;
+
 typedef struct sym_sub_path_ellipse_t {
     uint8_t type;
     double rotation;
     sym_point_t center;
-    double radiusx;
-    double radiusy;
+    double xradius;
+    double yradius;
 }sym_sub_path_ellipse_t;
 
 typedef struct sym_sub_path_arc_t {
     uint8_t type;
     double rotation;
     sym_point_t center;
-    double radiusx;
-    double radiusy;
+    double xradius;
+    double yradius;
     double start_angle;
     double end_angle;
 }sym_sub_path_arc_t;
@@ -148,6 +154,8 @@ const char* sym_parse_error();
 json_object* sym_to_json(symbol_t* symbol);
 char* sym_to_string(symbol_t* symbol);
 
+uint8_t sym_point_from_json(sym_point_t* point, json_object* obj);
+json_object* sym_point_to_json(sym_point_t* point);
 
 void sym_color_parse_from_json(json_object* obj, sym_color_t* color);
 json_object* sym_color_to_json(sym_color_t* color);
@@ -212,4 +220,9 @@ sym_sub_path_ellipse_t* sym_ellipse_parse_from_json(json_object* obj);
 json_object* sym_ellipse_to_json(sym_sub_path_ellipse_t* ellipse);
 void sym_ellipse_free(sym_sub_path_ellipse_t* ellipse);
 
+
+sym_sub_path_circle_t* sym_circle_create();
+sym_sub_path_circle_t* sym_circle_parse_from_json(json_object* obj);
+json_object* sym_circle_to_json(sym_sub_path_circle_t* circle);
+void sym_circle_free(sym_sub_path_circle_t* circle);
 #endif

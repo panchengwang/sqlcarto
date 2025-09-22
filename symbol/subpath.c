@@ -23,6 +23,12 @@ sym_sub_path_t* sym_sub_path_parse_from_json(json_object* obj) {
     else if (strcmp(strtype, "polygon") == 0) {
         return (sym_sub_path_t*)sym_polygon_parse_from_json(obj);
     }
+    else if (strcmp(strtype, "ellipse") == 0) {
+        return (sym_sub_path_t*)sym_ellipse_parse_from_json(obj);
+    }
+    else if (strcmp(strtype, "circle") == 0) {
+        return (sym_sub_path_t*)sym_circle_parse_from_json(obj);
+    }
     // else if (strcmp(strtype, "arc") == 0) {
     //     return (sym_sub_path_t*)sym_arc_parse_from_json_path(obj);
     // }
@@ -51,6 +57,12 @@ json_object* sym_sub_path_to_json(sym_sub_path_t* subpath) {
     case SYM_SUB_PATH_POLYGON:
         return sym_polygon_to_json((sym_sub_path_polygon_t*)subpath);
         break;
+    case SYM_SUB_PATH_ELLIPSE:
+        return sym_ellipse_to_json((sym_sub_path_ellipse_t*)subpath);
+        break;
+    case SYM_SUB_PATH_CIRCLE:
+        return sym_circle_to_json((sym_sub_path_circle_t*)subpath);
+        break;
     default:
         break;
     }
@@ -66,6 +78,12 @@ void sym_sub_path_free(sym_sub_path_t* subpath) {
         break;
     case SYM_SUB_PATH_POLYGON:
         sym_polygon_free((sym_sub_path_polygon_t*)subpath);
+        break;
+    case SYM_SUB_PATH_ELLIPSE:
+        sym_ellipse_free((sym_sub_path_ellipse_t*)subpath);
+        break;
+    case SYM_SUB_PATH_CIRCLE:
+        sym_circle_free((sym_sub_path_circle_t*)subpath);
         break;
     default:
         break;
