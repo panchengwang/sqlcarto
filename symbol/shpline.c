@@ -18,22 +18,18 @@ sym_shape_line_t* sym_shape_line_create() {
 }
 
 sym_shape_line_t* sym_shape_line_parse_from_json(json_object* obj) {
-
     json_object* objstroke;
     JSON_GET_OBJECT(obj, "stroke", objstroke);
 
-    if (!_sym_parse_ok) {
-        return NULL;
-    }
-
-    sym_shape_line_t* line = sym_shape_line_create();
-
-    line->stroke = sym_stroke_parse_from_json(objstroke);
+    sym_stroke_t* stroke = NULL;
+    stroke = sym_stroke_parse_from_json(objstroke);
     if (_sym_parse_ok == 0) {
-        sym_shape_line_free(line);
         return NULL;
     }
+
     _sym_parse_ok = 1;
+    sym_shape_line_t* line = sym_shape_line_create();
+    line->stroke = stroke;
     return line;
 }
 

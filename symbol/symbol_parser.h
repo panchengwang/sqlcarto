@@ -109,9 +109,55 @@ typedef struct sym_sub_path_arc_t {
     double end_angle;
 }sym_sub_path_arc_t;
 
+typedef struct sym_sub_path_pie_t {
+    uint8_t type;
+    double rotation;
+    sym_point_t center;
+    double xradius;
+    double yradius;
+    double start_angle;
+    double end_angle;
+}sym_sub_path_pie_t;
 
+typedef struct sym_sub_path_chord_t {
+    uint8_t type;
+    double rotation;
+    sym_point_t center;
+    double xradius;
+    double yradius;
+    double start_angle;
+    double end_angle;
+}sym_sub_path_chord_t;
 
+typedef struct sym_sub_path_regular_polygon_t {
+    uint8_t type;
+    double rotation;
+    sym_point_t center;
+    double sides;
+    double radius;
+}sym_sub_path_regular_polygon_t;
 
+typedef struct sym_sub_path_star_t {
+    uint8_t type;
+    double rotation;
+    sym_point_t center;
+    double sides;
+    double radius;
+    double radius2;
+}sym_sub_path_star_t;
+
+typedef struct sym_sub_path_text_t {
+    uint8_t type;
+    double rotation;
+    sym_point_t center;
+    uint8_t outlined;
+    double outlined_width;
+    uint8_t weight;
+    uint8_t slant;
+    double font_size;
+    char* font_name;
+    char* text;
+}sym_sub_path_text_t;
 
 typedef struct sym_shape_path_t {
     uint8_t type;
@@ -214,6 +260,17 @@ sym_sub_path_arc_t* sym_arc_parse_from_json(json_object* obj);
 json_object* sym_arc_to_json(sym_sub_path_arc_t* arc);
 void sym_arc_free(sym_sub_path_arc_t* arc);
 
+sym_sub_path_pie_t* sym_pie_create();
+sym_sub_path_pie_t* sym_pie_parse_from_json(json_object* obj);
+json_object* sym_pie_to_json(sym_sub_path_pie_t* pie);
+void sym_pie_free(sym_sub_path_pie_t* pie);
+
+
+sym_sub_path_chord_t* sym_chord_create();
+sym_sub_path_chord_t* sym_chord_parse_from_json(json_object* obj);
+json_object* sym_chord_to_json(sym_sub_path_chord_t* chord);
+void sym_chord_free(sym_sub_path_chord_t* pie);
+
 
 sym_sub_path_ellipse_t* sym_ellipse_create();
 sym_sub_path_ellipse_t* sym_ellipse_parse_from_json(json_object* obj);
@@ -225,4 +282,17 @@ sym_sub_path_circle_t* sym_circle_create();
 sym_sub_path_circle_t* sym_circle_parse_from_json(json_object* obj);
 json_object* sym_circle_to_json(sym_sub_path_circle_t* circle);
 void sym_circle_free(sym_sub_path_circle_t* circle);
+
+
+sym_sub_path_regular_polygon_t* sym_regular_polygon_create();
+sym_sub_path_regular_polygon_t* sym_regular_polygon_parse_from_json(json_object* obj);
+json_object* sym_regular_polygon_to_json(sym_sub_path_regular_polygon_t* regular_polygon);
+void sym_regular_polygon_free(sym_sub_path_regular_polygon_t* regular_polygon);
+
+
+sym_sub_path_star_t* sym_star_create();
+sym_sub_path_star_t* sym_star_parse_from_json(json_object* obj);
+json_object* sym_star_to_json(sym_sub_path_star_t* star);
+void sym_star_free(sym_sub_path_star_t* star);
+
 #endif

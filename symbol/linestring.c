@@ -20,15 +20,10 @@ sym_sub_path_linestring_t* sym_linestring_create() {
 sym_sub_path_linestring_t* sym_linestring_parse_from_json(json_object* obj) {
     double rotation = 0;
     JSON_GET_DOUBLE(obj, "rotation", rotation);
-    if (!_sym_parse_ok) {
-        return NULL;
-    }
 
     json_object* arrpoints = NULL;
     JSON_GET_ARRAY(obj, "points", arrpoints);
-    if (!_sym_parse_ok) {
-        return NULL;
-    }
+
     int32_t npoints = json_object_array_length(arrpoints);
     sym_point_t* points;
     points = (sym_point_t*)malloc(sizeof(sym_point_t) * npoints);

@@ -27,22 +27,11 @@ sym_sub_path_ellipse_t* sym_ellipse_parse_from_json(json_object* obj) {
     double xradius, yradius;
 
     JSON_GET_DOUBLE(obj, "rotation", rotation);
-    if (!_sym_parse_ok) {
-        return NULL;
-    }
+    JSON_GET_POINT(obj, "center", center);
 
-    json_object* objcenter = json_object_object_get(obj, "center");
-    if (!sym_point_from_json(&center, objcenter)) {
-        return NULL;
-    }
     JSON_GET_DOUBLE(obj, "xradius", xradius);
-    if (!_sym_parse_ok) {
-        return NULL;
-    }
     JSON_GET_DOUBLE(obj, "yradius", yradius);
-    if (!_sym_parse_ok) {
-        return NULL;
-    }
+
 
     sym_sub_path_ellipse_t* ellipse = sym_ellipse_create();
     ellipse->rotation = rotation;

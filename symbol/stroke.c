@@ -8,93 +8,69 @@ extern char _sym_parse_error[1024];
 extern uint8_t _sym_parse_ok;
 
 sym_stroke_t* sym_stroke_parse_from_json(json_object* obj) {
-    sym_stroke_t* stroke = (sym_stroke_t*)malloc(sizeof(sym_stroke_t));
+
+    if (!obj) {
+        sprintf(_sym_parse_error, "Missing: stroke ");
+        _sym_parse_ok = 0;
+        return NULL;
+    }
 
     const char* strcap;
     JSON_GET_STRING(obj, "cap", strcap);
-    if (!_sym_parse_ok) {
-        sym_stroke_free(stroke);
-        return NULL;
-    }
+    uint8_t cap;
     if (strcmp(strcap, "butt") == 0) {
-        stroke->cap = SYM_CAP_BUTT;
+        cap = SYM_CAP_BUTT;
     }
     else if (strcmp(strcap, "round") == 0) {
-        stroke->cap = SYM_CAP_ROUND;
+        cap = SYM_CAP_ROUND;
     }
     else if (strcmp(strcap, "square") == 0) {
-        stroke->cap = SYM_CAP_SQUARE;
+        cap = SYM_CAP_SQUARE;
     }
     else {
         strcpy(_sym_parse_error, "Invalid 'cap' value");
         _sym_parse_ok = 0;
-        sym_stroke_free(stroke);
         return NULL;
     }
 
     const char* strjoin;
     JSON_GET_STRING(obj, "join", strjoin);
-    if (!_sym_parse_ok) {
-        sym_stroke_free(stroke);
-        return NULL;
-    }
+
+    uint8_t join;
     if (strcmp(strjoin, "bevel") == 0) {
-        stroke->join = SYM_JOIN_BEVEL;
+        join = SYM_JOIN_BEVEL;
     }
     else if (strcmp(strjoin, "miter") == 0) {
-        stroke->join = SYM_JOIN_MITER;
+        join = SYM_JOIN_MITER;
     }
     else if (strcmp(strjoin, "round") == 0) {
-        stroke->join = SYM_JOIN_ROUND;
+        join = SYM_JOIN_ROUND;
     }
     else {
         strcpy(_sym_parse_error, "Invalid 'join' value");
         _sym_parse_ok = 0;
-        sym_stroke_free(stroke);
         return NULL;
     }
 
-
-    JSON_GET_DOUBLE(obj, "width", stroke->width);
-    if (!_sym_parse_ok) {
-        sym_stroke_free(stroke);
-        return NULL;
-    }
+    double width;
+    JSON_GET_DOUBLE(obj, "width", width);
+    sym_color_t color;
+    JSON_GET_COLOR(obj, "color", color);
 
 
-    json_object* objcolor;
-    objcolor = json_object_object_get(obj, "color");
-    if (objcolor == NULL) {
-        strcpy(_sym_parse_error, "Missing 'color' key");
-        _sym_parse_ok = 0;
-        sym_stroke_free(stroke);
-        return NULL;
-    }
-    if (json_object_get_type(objcolor) != json_type_array || json_object_array_length(objcolor) != 4) {
-        sprintf(_sym_parse_error, "Invalid 'color' values: %s", json_object_to_json_string(objcolor));
-        _sym_parse_ok = 0;
-        sym_stroke_free(stroke);
-        return NULL;
-    }
-    sym_color_parse_from_json(objcolor, &stroke->color);
-    if (!_sym_parse_ok) {
-        sym_stroke_free(stroke);
-        return NULL;
-    }
 
     json_object* objdashes;
     objdashes = json_object_object_get(obj, "dashes");
     if (json_object_get_type(objdashes) != json_type_array) {
         strcpy(_sym_parse_error, "Invalid 'dashes' values");
         _sym_parse_ok = 0;
-        sym_stroke_free(stroke);
         return NULL;
     }
     int ndash = json_object_array_length(objdashes);
-    stroke->ndashes = ndash;
+    double* dashes = NULL;
 
     if (ndash > 0) {
-        stroke->dashes = (double*)malloc(sizeof(double) * ndash);
+        dashes = (double*)malloc(sizeof(double) * ndash);
 
         for (int i = 0; i < ndash; i++) {
             json_object* objdash = json_object_array_get_idx(objdashes, i);
@@ -103,19 +79,28 @@ sym_stroke_t* sym_stroke_parse_from_json(json_object* obj) {
                 && json_object_get_type(objdash) != json_type_int) {
                 strcpy(_sym_parse_error, "Invalid 'dasharray' values");
                 _sym_parse_ok = 0;
-                sym_stroke_free(stroke);
+                free(dashes);
                 return NULL;
             }
-            stroke->dashes[i] = json_object_get_double(objdash);
+            dashes[i] = json_object_get_double(objdash);
         }
     }
 
-    JSON_GET_DOUBLE(obj, "dashesoffset", stroke->dashes_offset);
-    if (!_sym_parse_ok) {
-        sym_stroke_free(stroke);
-        return NULL;
-    }
+    double dashes_offset;
+    JSON_GET_DOUBLE(obj, "dashesoffset", dashes_offset);
+
     _sym_parse_ok = 1;
+
+    sym_stroke_t* stroke = (sym_stroke_t*)malloc(sizeof(sym_stroke_t));
+    stroke->cap = cap;
+    stroke->join = join;
+    stroke->width = width;
+    stroke->color = color;
+    stroke->ndashes = ndash;
+    stroke->dashes = dashes;
+    stroke->dashes_offset = dashes_offset;
+
+
     return stroke;
 }
 

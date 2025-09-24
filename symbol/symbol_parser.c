@@ -60,48 +60,40 @@ symbol_t* sym_parse_string(const char* jsonstr) {
 
 
 symbol_t* sym_parse_from_json(json_object* obj) {
-    symbol_t* sym = sym_create();
-    JSON_GET_DOUBLE(obj, "width", sym->width);
-    if (_sym_parse_ok == 0) {
-        sym_free(sym);
-        return NULL;
-    }
-    JSON_GET_DOUBLE(obj, "height", sym->height);
-    if (_sym_parse_ok == 0) {
-        sym_free(sym);
-        return NULL;
-    }
-    JSON_GET_DOUBLE(obj, "dotspermm", sym->dotspermm);
-    if (_sym_parse_ok == 0) {
-        sym_free(sym);
-        return NULL;
-    }
 
-    json_object* shapes = json_object_object_get(obj, "shapes");
-    if (shapes == NULL) {
-        strcpy(_sym_parse_error, "Missing 'shapes' key");
-        _sym_parse_ok = 0;
-        sym_free(sym);
-        return NULL;
-    }
-    else if (json_object_get_type(shapes) != json_type_array) {
-        strcpy(_sym_parse_error, "Invalid 'shapes' key");
-        _sym_parse_ok = 0;
-        sym_free(sym);
-        return NULL;
-    }
-    sym->nshapes = json_object_array_length(shapes);
-    sym->shapes = (sym_shape_t**)malloc(sizeof(sym_shape_t*) * sym->nshapes);
+    double width;
+    JSON_GET_DOUBLE(obj, "width", width);
+    double height;
+    JSON_GET_DOUBLE(obj, "height", height);
+    double dotspermm;
+    JSON_GET_DOUBLE(obj, "dotspermm", dotspermm);
+    json_object* objshapes;
+    JSON_GET_ARRAY(obj, "shapes", objshapes);
 
-    for (int i = 0; i < sym->nshapes; ++i) {
-        json_object* objshp = json_object_array_get_idx(shapes, i);
-        sym->shapes[i] = sym_shape_parse_from_json(objshp);
+    int32_t nshapes = json_object_array_length(objshapes);
+    sym_shape_t** shapes = NULL;
+    shapes = (sym_shape_t**)malloc(sizeof(sym_shape_t*) * nshapes);
+    for (int32_t i = 0; i < nshapes; ++i) {
+        shapes[i] = NULL;
+    }
+    for (int i = 0; i < nshapes; ++i) {
+        json_object* objshp = json_object_array_get_idx(objshapes, i);
+        shapes[i] = sym_shape_parse_from_json(objshp);
         if (!_sym_parse_ok) {
-            sym_free(sym);
+            for (int j = 0; j < i; ++j) {
+                sym_shape_free(shapes[j]);
+            }
             return NULL;
         }
     }
     _sym_parse_ok = 1;
+    symbol_t* sym = sym_create();
+    sym->width = width;
+    sym->height = height;
+    sym->dotspermm = dotspermm;
+    sym->nshapes = nshapes;
+    sym->shapes = shapes;
+
     return sym;
 }
 
@@ -137,14 +129,18 @@ json_object* sym_to_json(symbol_t* sym) {
     JSON_SET_DOUBLE(obj, "dotspermm", sym->dotspermm);
 
     json_object* arrshapes = json_object_new_array();
+
     for (int i = 0; i < sym->nshapes; ++i) {
         json_object* objshp = sym_shape_to_json(sym->shapes[i]);
+
         json_object_array_add(arrshapes, objshp);
     }
 
     json_object_object_add(obj, "shapes", arrshapes);
     return obj;
 }
+
+
 
 
 char* sym_to_string(symbol_t* symbol) {
@@ -166,9 +162,7 @@ sym_shape_t* sym_shape_parse_from_json(json_object* obj) {
     }
     const char* strtype;
     JSON_GET_STRING(obj, "type", strtype);
-    if (_sym_parse_ok == 0) {
-        return NULL;
-    }
+
 
     sym_shape_t* shp = NULL;
     if (strcmp(strtype, "line") == 0) {

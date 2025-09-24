@@ -9,11 +9,11 @@ extern uint8_t _sym_parse_ok;
 
 uint8_t sym_point_from_json(sym_point_t* point, json_object* obj) {
     if (json_object_get_type(obj) == json_type_object) {
-        JSON_GET_DOUBLE(obj, "x", point->x);
+        JSON_GET_DOUBLE_WITHOUT_RETURN(obj, "x", point->x);
         if (!_sym_parse_ok) {
             return 0;
         }
-        JSON_GET_DOUBLE(obj, "y", point->y);
+        JSON_GET_DOUBLE_WITHOUT_RETURN(obj, "y", point->y);
         if (!_sym_parse_ok) {
             return 0;
         }

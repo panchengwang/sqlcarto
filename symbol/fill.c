@@ -11,9 +11,7 @@ extern uint8_t _sym_parse_ok;
 sym_fill_t* sym_fill_parse_from_json(json_object* obj) {
     const char* strtype;
     JSON_GET_STRING(obj, "type", strtype);
-    if (!_sym_parse_ok) {
-        return NULL;
-    }
+
 
     sym_fill_t* fill = NULL;
     if (strcmp(strtype, "solid") == 0) {
@@ -63,27 +61,12 @@ sym_fill_solid_t* sym_fill_solid_create() {
 
 
 sym_fill_solid_t* sym_fill_solid_parse_from_json(json_object* obj) {
-    sym_fill_solid_t* solid = sym_fill_solid_create();
-    json_object* objcolor;
-    objcolor = json_object_object_get(obj, "color");
-    if (objcolor == NULL) {
-        strcpy(_sym_parse_error, "Missing 'color' key");
-        _sym_parse_ok = 0;
-        sym_fill_solid_free(solid);
-        return NULL;
-    }
-    if (json_object_get_type(objcolor) != json_type_array || json_object_array_length(objcolor) != 4) {
-        sprintf(_sym_parse_error, "Invalid 'color' values: %s", json_object_to_json_string(objcolor));
-        _sym_parse_ok = 0;
-        sym_fill_solid_free(solid);
-        return NULL;
-    }
-    sym_color_parse_from_json(objcolor, &solid->color);
-    if (!_sym_parse_ok) {
-        sym_fill_solid_free(solid);
-        return NULL;
-    }
+    sym_color_t color;
+    JSON_GET_COLOR(obj, "color", color);
     _sym_parse_ok = 1;
+    sym_fill_solid_t* solid = sym_fill_solid_create();
+    solid->color = color;
+    solid->type = SYM_FILL_SOLID;
     return solid;
 }
 
