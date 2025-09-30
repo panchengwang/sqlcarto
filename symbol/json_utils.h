@@ -131,6 +131,11 @@
     }                                                               \
 }
 
+#define JSON_SET_BOOLEAN(obj, key, val)                             \
+{                                                                   \
+    json_object* myobj = json_object_new_boolean(val);              \
+    json_object_object_add(obj, key, myobj);                        \
+}
 
 
 #define JSON_GET_ARRAY(obj, key, val)                               \

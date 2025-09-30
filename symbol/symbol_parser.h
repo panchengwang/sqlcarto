@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <json-c/json.h>
+#include <cairo/cairo.h>
 
 #define SYM_SUB_PATH_LINESTRING                 1
 #define SYM_SUB_PATH_POLYGON                    2
@@ -34,6 +35,13 @@
 #define SYM_JOIN_MITER                          0
 #define SYM_JOIN_ROUND                          1
 #define SYM_JOIN_BEVEL                          2
+
+#define SYM_FONT_WEIGHT_NORMAL                  CAIRO_FONT_WEIGHT_NORMAL
+#define SYM_FONT_WEIGHT_BOLD                    CAIRO_FONT_WEIGHT_BOLD
+#define SYM_FONT_SLANT_NORMAL                   CAIRO_FONT_SLANT_NORMAL
+#define SYM_FONT_SLANT_ITALIC                   CAIRO_FONT_SLANT_ITALIC
+#define SYM_FONT_SLANT_OBLIQUE                  CAIRO_FONT_SLANT_OBLIQUE
+
 
 typedef struct sym_point_t {
     double x, y;
@@ -189,6 +197,7 @@ typedef struct symbol_t {
 
 
 
+
 symbol_t* sym_create();
 symbol_t* sym_parse_file(const char* filename);
 symbol_t* sym_parse_string(const char* string);
@@ -294,5 +303,42 @@ sym_sub_path_star_t* sym_star_create();
 sym_sub_path_star_t* sym_star_parse_from_json(json_object* obj);
 json_object* sym_star_to_json(sym_sub_path_star_t* star);
 void sym_star_free(sym_sub_path_star_t* star);
+
+
+sym_sub_path_text_t* sym_text_create();
+sym_sub_path_text_t* sym_text_parse_from_json(json_object* obj);
+json_object* sym_text_to_json(sym_sub_path_text_t* text);
+void sym_text_free(sym_sub_path_text_t* text);
+
+
+typedef struct sym_canvas_t {
+    cairo_surface_t* surface;
+    cairo_t* cairo;
+    double width, height;
+    double dotspermm;
+    char format[16];
+} sym_canvas_t;
+
+sym_canvas_t* sym_canvas_create();
+uint8_t sym_canvas_set_size(sym_canvas_t* canvas, double width, double height);
+uint8_t sym_canvas_set_dotspermm(sym_canvas_t* canvas, double dotspermm);
+uint8_t sym_canvas_set_dpi(sym_canvas_t* canvas, double dpi);
+uint8_t sym_canvas_begin(sym_canvas_t* canvas);
+uint8_t sym_canvas_end(sym_canvas_t* canvas);
+uint8_t sym_canvas_free(sym_canvas_t* canvas);
+uint8_t sym_canvas_draw(sym_canvas_t* canvas, symbol_t* symbol);
+uint8_t sym_canvas_draw_shape(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath_linestring(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath_polygon(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath_arc(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath_pie(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath_chord(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath_ellipse(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath_circle(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath_regular_polygon(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath_star(sym_canvas_t* canvas, sym_shape_t* shape);
+uint8_t sym_canvas_draw_subpath_text(sym_canvas_t* canvas, sym_shape_t* shape);
+char* sym_canvas_get_data(sym_canvas_t* canvas, int32_t* size);
 
 #endif

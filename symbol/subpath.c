@@ -41,6 +41,9 @@ sym_sub_path_t* sym_sub_path_parse_from_json(json_object* obj) {
     else if (strcmp(strtype, "star") == 0) {
         return (sym_sub_path_t*)sym_star_parse_from_json(obj);
     }
+    else if (strcmp(strtype, "text") == 0) {
+        return (sym_sub_path_t*)sym_text_parse_from_json(obj);
+    }
     else {
         _sym_parse_ok = 0;
         sprintf(_sym_parse_error, "Invalid sub path type: %s", strtype);
@@ -87,6 +90,9 @@ json_object* sym_sub_path_to_json(sym_sub_path_t* subpath) {
     case SYM_SUB_PATH_STAR:
         return sym_star_to_json((sym_sub_path_star_t*)subpath);
         break;
+    case SYM_SUB_PATH_TEXT:
+        return sym_text_to_json((sym_sub_path_text_t*)subpath);
+        break;
     default:
         break;
     }
@@ -123,6 +129,9 @@ void sym_sub_path_free(sym_sub_path_t* subpath) {
         break;
     case SYM_SUB_PATH_STAR:
         sym_star_free((sym_sub_path_star_t*)subpath);
+        break;
+    case SYM_SUB_PATH_TEXT:
+        sym_text_free((sym_sub_path_text_t*)subpath);
         break;
     default:
         break;

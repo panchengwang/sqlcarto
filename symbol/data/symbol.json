@@ -116,6 +116,7 @@
           "radius2": 0.4
         },
         {
+          "type": "text",
           "text": "3",
           "center": [0.0, 0.0],
           "fontsize": 0.7,
@@ -124,7 +125,7 @@
           "outlined": true,
           "outlinedwidth": 0.2,
           "slant": "normal",
-          "weight": "normal"
+          "weight": "bold"
         }
       ]
     }
